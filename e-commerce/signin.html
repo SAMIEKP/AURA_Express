@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            500: '#FF6A00',
+                            600: '#e65f00'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Sign In - AURA Express</title>
+</head>
+<body class="bg-[#f4f4f4] dark:bg-[#0a0a0a] transition-colors duration-300 min-h-screen" id="body-element">
+    <!-- Dark Mode & Theme Indicator -->
+    <div id="theme-toast" class="fixed top-4 right-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-4 py-2 rounded-full shadow-lg z-[999] hidden transition-all duration-300 text-sm font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        Dark Mode
+    </div>
+
+    <header id="main-header" class="fixed top-0 w-full z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+        <div class="flex items-center justify-between px-8 py-4 max-w-[1440px] mx-auto">
+            <a href="index.html" id="logo" class="text-3xl font-bold text-[#FF6A00] tracking-tight whitespace-nowrap hover:opacity-80 transition-opacity">
+                AURA Express
+            </a>
+            <div class="hidden md:flex items-center space-x-6 text-sm text-gray-700 dark:text-gray-300">
+                <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
+                    <svg id="sun-icon" class="w-6 h-6 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.536l1.414 1.414a1 1 0 111.414-1.414l-1.414-1.414zM2.05 6.464l1.414-1.414a1 1 0 00-1.414-1.414L.636 5.05a1 1 0 101.414 1.414z" clip-rule="evenodd"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a1 1 0 00-1.414 1.414A6 6 0 1015.879 15.879a1 1 0 001.414-1.414z"></path></svg>
+                </button>
+                <a href="cart.html" class="hover:text-[#FF6A00] flex flex-col items-center relative transition-colors transform hover:scale-105">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span class="absolute -top-1 -right-1 bg-[#FF6A00] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse" id="cart-count">0</span>
+                    <span class="text-xs">Cart</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-40 pb-24 px-4 min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#050505] dark:to-[#0a0a0a]">
+        <div class="max-w-md mx-auto">
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-10 shadow-2xl">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-3 tracking-tight">Welcome Back</h1>
+                    <p class="text-gray-500 dark:text-gray-400">Sign in to manage your orders and profile</p>
+                </div>
+
+                <form id="signin-form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Email Address</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"></path></svg>
+                            </span>
+                            <input type="email" id="signin-email" required placeholder="name@company.com" class="w-full pl-12 pr-4 py-3.5 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FF6A00] focus:border-transparent transition-all">
+                        </div>
+                        <p id="email-feedback" class="mt-1 text-xs hidden"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            </span>
+                            <input type="password" id="signin-password" required placeholder="••••••••" class="w-full pl-12 pr-12 py-3.5 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FF6A00] focus:border-transparent transition-all">
+                            <button type="button" onclick="togglePassword('signin-password', this)" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#FF6A00] transition-colors">
+                                <svg class="w-5 h-5 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                <svg class="w-5 h-5 eye-off-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded focus:outline-none cursor-pointer">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm font-medium text-[#FF6A00] hover:text-[#ff5500] transition-colors">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="w-full bg-[#FF6A00] text-white font-bold py-4 rounded-xl hover:bg-[#ff5500] transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg hover:shadow-[#FF6A00]/25">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400">Or continue with</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button type="button" data-social-auth data-social-provider="google" data-social-mode="signin" class="flex-1 flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-700 rounded-xl py-3 px-4 font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.24-1.84 4.24-1.12 1.12-2.8 2.32-5.84 2.32-4.12 0-7.36-3.32-7.36-7.44s3.24-7.44 7.36-7.44c2.24 0 3.88.88 5.08 2.04l2.32-2.32C18.16 3.76 15.84 2.52 12.48 2.52 6.72 2.52 2 7.24 2 13s4.72 10.48 10.48 10.48c3.12 0 5.48-1.04 7.32-3.12 1.88-1.88 2.48-4.52 2.48-6.72 0-.64-.04-1.24-.12-1.72h-9.68z"></path></svg>
+                        <span>Google</span>
+                    </button>
+                    <button type="button" data-social-auth data-social-provider="facebook" data-social-mode="signin" class="flex-1 flex items-center justify-center gap-2 bg-[#1877F2] rounded-xl py-3 px-4 font-semibold text-white hover:bg-[#166fe5] transition-all">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 3.656 10.99 8.792 12.75v-9.02H5.045v-3.73h3.747v-2.846c0-3.703 2.197-5.755 5.586-5.755 1.624 0 3.328.29 3.328.29v3.66h-1.875c-1.836 0-2.408 1.14-2.408 2.31v2.77h4.125l-.659 3.73h-3.466v9.02c5.136-1.76 8.792-6.76 8.792-12.75z"></path></svg>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <p class="text-gray-600 dark:text-gray-400">New to AURA? <a href="signup.html" class="font-bold text-[#FF6A00] hover:text-[#ff5500] transition-colors underline decoration-2 underline-offset-4">Create an account</a></p>
+                </div>
+            </div>
+
+            <!-- Security Info -->
+            <div class="mt-8 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div class="flex gap-3">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-300 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" clip-rule="evenodd"></path></svg>
+                    <div>
+                        <h3 class="font-semibold text-blue-900 dark:text-blue-200 mb-1">Use a strong password</h3>
+                        <p class="text-sm text-blue-800 dark:text-blue-300">Combine uppercase, lowercase, numbers, and symbols for better security.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-300 dark:text-gray-400 border-t border-gray-800/50">
+        <div class="max-w-[1440px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>About AURA</h3>
+                <p class="text-sm text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">Your trusted global marketplace for premium quality products at unbeatable prices. Connecting buyers and sellers worldwide since 2024.</p>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Quick Links</h3>
+                <ul class="space-y-3 text-sm">
+<li><a href="index.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Home</a></li>
+                    <li><a href="products.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Shop All</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> About Us</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Contact</a></li>
+                </ul>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Support</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="help.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Help Center</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Returns</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Shipping Info</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Track Order</a></li>
+                </ul>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Follow Us</h3>
+                <div class="flex gap-4 items-start pt-1">
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 group-hover:scale-110" title="Facebook">f</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 group-hover:scale-110" title="Twitter">𝕏</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 group-hover:scale-110" title="Instagram">📷</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800/50 px-8 py-8 text-center text-sm">
+© 2026 AURA Express. All rights reserved. | Privacy Policy | Terms of Service
+        </div>
+    </footer>
+
+    <script>
+        // Form submission
+        document.getElementById('signin-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const emailValue = document.getElementById('signin-email')?.value?.trim().toLowerCase() || '';
+            const passwordValue = document.getElementById('signin-password')?.value || '';
+            const emailFeedback = document.getElementById('email-feedback');
+            const accounts = JSON.parse(localStorage.getItem('aura_accounts')) || [];
+            const account = accounts.find(acc => (acc.email || '').toLowerCase() === emailValue);
+
+            const hashedInput = await hashPassword(passwordValue);
+
+            if (!account || account.password !== hashedInput) {
+                if (emailFeedback) {
+                    emailFeedback.textContent = '✗ Invalid email or password';
+                    emailFeedback.classList.remove('hidden', 'text-green-500');
+                    emailFeedback.classList.add('text-red-500');
+                }
+                showToast('Invalid login details', 'error');
+                return;
+            }
+
+            localStorage.setItem('aura_user_logged_in', 'true');
+            localStorage.setItem('userName', account.name || emailValue.split('@')[0] || 'Customer');
+            localStorage.setItem('aura_auth_provider', 'Email');
+            localStorage.setItem('aura_current_user', JSON.stringify(account));
+
+            showToast('Welcome back to AURA Express!', 'success');
+            setTimeout(() => window.location.href = 'home.html', 1500);
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

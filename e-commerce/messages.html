@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            500: '#FF6A00',
+                            600: '#e65f00'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Messages - AURA Express</title>
+</head>
+<body class="bg-[#f4f4f4] dark:bg-[#0a0a0a] transition-colors duration-300 min-h-screen" id="body-element">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div id="theme-toast" class="fixed top-4 right-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-4 py-2 rounded-full shadow-lg z-[999] hidden transition-all duration-300 text-sm font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        Dark Mode
+    </div>
+    <header id="main-header" class="fixed top-0 w-full z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+        <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 max-w-[1440px] mx-auto">
+<a href="index.html" id="logo" class="text-3xl font-bold text-[#FF6A00] tracking-tight whitespace-nowrap hover:opacity-80 transition-opacity">
+                AURA Express
+            </a>
+            <div class="hidden md:flex items-center space-x-6 text-sm text-gray-700 dark:text-gray-300">
+                <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
+                    <svg id="sun-icon" class="w-6 h-6 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.536l1.414 1.414a1 1 0 111.414-1.414l-1.414-1.414zM2.05 6.464l1.414-1.414a1 1 0 00-1.414-1.414L.636 5.05a1 1 0 101.414 1.414z" clip-rule="evenodd"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a1 1 0 00-1.414 1.414A6 6 0 1015.879 15.879a1 1 0 001.414-1.414z"></path></svg>
+                </button>
+                <a href="signin.html" class="hover:text-[#FF6A00] flex flex-col items-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span>Sign In</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-bottom-nav fixed bottom-0 left-0 right-0 md:hidden bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 z-40 shadow-2xl">
+        <div class="flex items-center justify-around py-3">
+            <a href="home.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Home</span></a>
+            <a href="products.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Shop</span></a>
+            <a href="cart.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors relative"><span class="absolute -top-1 -right-1 bg-[#FF6A00] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center" id="cart-count-mobile">0</span><span class="text-xs mt-1">Cart</span></a>
+            <a href="wishlist.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Wishlist</span></a>
+            <a href="profile.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Account</span></a>
+        </div>
+    </div>
+
+    <main id="main-content" class="pt-32 pb-24 md:pb-12">
+        <div class="max-w-[1440px] mx-auto px-4 md:px-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Messages</h1>
+                <button id="new-message-btn" class="bg-[#FF6A00] text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-[#e65f00] transition-colors">
+                    + New Message
+                </button>
+            </div>
+
+            <div id="messages-overview" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Overview cards injected by JS -->
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Conversation Panel -->
+                <section id="conversation-panel" class="md:col-span-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
+                    <div class="p-4 border-b border-gray-100 space-y-3">
+                        <input id="conversation-search" type="text" placeholder="Search conversations..." aria-label="Search conversations" autocomplete="off" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                        <div class="grid grid-cols-3 gap-2">
+                            <button data-filter="all" class="message-filter-btn bg-[#FF6A00] text-white text-xs font-semibold py-2 rounded-lg">All</button>
+                            <button data-filter="unread" class="message-filter-btn bg-gray-100 text-gray-700 text-xs font-semibold py-2 rounded-lg hover:bg-gray-200 transition-colors">Unread</button>
+                            <button data-filter="starred" class="message-filter-btn bg-gray-100 text-gray-700 text-xs font-semibold py-2 rounded-lg hover:bg-gray-200 transition-colors">Starred</button>
+                        </div>
+                    </div>
+                    <div id="messages-list" class="divide-y divide-gray-100 max-h-[540px] overflow-y-auto">
+                        <!-- Conversations injected by JS -->
+                    </div>
+                </section>
+
+                <!-- Thread Panel -->
+                <section id="thread-panel" class="md:col-span-2 bg-white rounded-xl border border-gray-100 flex flex-col min-h-[620px]">
+                    <div id="thread-header" class="border-b border-gray-100 p-4">
+                        <div class="text-center text-gray-500 text-sm">Select a conversation to start messaging</div>
+                    </div>
+
+                    <div id="typing-indicator" class="hidden px-6 py-2 text-xs text-gray-500 border-b border-gray-100">
+                        Supplier is typing...
+                    </div>
+
+                    <div id="message-thread" class="flex-grow p-6 overflow-y-auto bg-gradient-to-b from-white to-orange-50/20">
+                        <div class="h-full flex items-center justify-center text-gray-500 text-center">
+                            <div>
+                                <p class="font-semibold mb-1">No conversation selected</p>
+                                <p class="text-sm">Choose a supplier from the left panel to start chatting.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="quick-replies" class="hidden px-4 py-3 border-t border-gray-100 flex gap-2 overflow-x-auto">
+                        <!-- Quick reply chips injected by JS -->
+                    </div>
+
+                    <div class="border-t border-gray-100 p-4">
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center gap-2">
+                                <button id="emoji-toggle-btn" class="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition-colors" disabled>😊</button>
+                                <button id="attach-btn" class="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition-colors" disabled>Attach</button>
+                                <input type="file" id="attachment-input" class="hidden">
+                                <div id="attachment-name" class="text-xs text-gray-500 hidden"></div>
+                            </div>
+                            <div id="emoji-picker" class="hidden p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex gap-2 text-lg">
+                                    <button class="emoji-btn">🙂</button>
+                                    <button class="emoji-btn">👍</button>
+                                    <button class="emoji-btn">🎉</button>
+                                    <button class="emoji-btn">✅</button>
+                                    <button class="emoji-btn">📦</button>
+                                    <button class="emoji-btn">🙏</button>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <input type="text" id="message-input" placeholder="Type your message..." aria-label="Type your message" autocomplete="off" class="flex-grow px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" disabled>
+                                <button id="send-message-btn" class="bg-[#FF6A00] text-white font-bold px-6 py-2 rounded-lg hover:bg-[#e65f00] transition-colors disabled:opacity-50" disabled>
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-300 dark:text-gray-400 border-t border-gray-800/50">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>About AURA</h3>
+                <p class="text-sm text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">Your trusted global marketplace for premium quality products at unbeatable prices. Connecting buyers and sellers worldwide since 2024.</p>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-br from-[#FF6A00] to-orange-500 rounded"></span>Quick Links</h3>
+                <ul class="space-y-3 text-sm">
+<li><a href="index.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Home</a></li>
+                    <li><a href="products.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Shop All</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> About Us</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Contact</a></li>
+                </ul>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-br from-[#FF6A00] to-orange-500 rounded"></span>Support</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="help.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Help Center</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Returns</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Shipping Info</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Track Order</a></li>
+                </ul>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-br from-[#FF6A00] to-orange-500 rounded"></span>Follow Us</h3>
+                <div class="flex gap-4 items-start pt-1">
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 group-hover:scale-110" title="Facebook">f</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 group-hover:scale-110" title="Twitter">𝕏</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 group-hover:scale-110" title="Instagram">📷</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800/50 px-8 py-8 text-center text-sm">
+© 2026 AURA Express. All rights reserved. | Privacy Policy | Terms of Service
+        </div>
+    </footer>
+
+    <script>
+        const initialConversations = [
+            {
+                id: 1,
+                supplier: 'CN Electronics Ltd.',
+                avatar: 'CE',
+                orderRef: 'AUR-18294',
+                online: true,
+                starred: true,
+                messages: [
+                    { id: 1, from: 'supplier', text: 'Hi Samuel, your order is packed and ready for dispatch.', time: '09:30', date: 'Today' },
+                    { id: 2, from: 'me', text: 'Great, when should it arrive in Blantyre?', time: '09:34', date: 'Today' },
+                    { id: 3, from: 'supplier', text: 'Expected delivery is within 3-5 business days.', time: '09:36', date: 'Today' }
+                ]
+            },
+            {
+                id: 2,
+                supplier: 'Tech Supplies Inc.',
+                avatar: 'TS',
+                orderRef: 'AUR-18013',
+                online: false,
+                starred: false,
+                messages: [
+                    { id: 1, from: 'supplier', text: 'Thank you for your purchase! Let us know if you need invoice edits.', time: '13:22', date: 'Yesterday' },
+                    { id: 2, from: 'me', text: 'Please include company name on invoice.', time: '13:40', date: 'Yesterday' }
+                ]
+            },
+            {
+                id: 3,
+                supplier: 'Home Care Co.',
+                avatar: 'HC',
+                orderRef: 'AUR-17701',
+                online: true,
+                starred: false,
+                messages: [
+                    { id: 1, from: 'supplier', text: 'Quality assurance has approved your items.', time: '16:05', date: 'Monday' }
+                ]
+            }
+        ];
+
+        const quickReplyPresets = [
+            'Please share tracking number',
+            'Can you confirm delivery date?',
+            'Thank you for the update',
+            'Please send invoice copy'
+        ];
+
+        const messageState = {
+            conversations: JSON.parse(localStorage.getItem('aura_messages_data') || 'null') || initialConversations,
+            selectedId: null,
+            filter: 'all',
+            query: '',
+            attachedFileName: '',
+            isMobileThreadOpen: false
+        };
+
+        function saveMessageState() {
+            localStorage.setItem('aura_messages_data', JSON.stringify(messageState.conversations));
+        }
+
+        function getConversationById(convId) {
+            return messageState.conversations.find(conv => conv.id === convId) || null;
+        }
+
+        function getLastMessage(conv) {
+            return conv.messages[conv.messages.length - 1] || null;
+        }
+
+        function isConversationUnread(conv) {
+            const lastMessage = getLastMessage(conv);
+            return Boolean(lastMessage && lastMessage.from === 'supplier' && conv.lastReadMessageId !== lastMessage.id);
+        }
+
+        function getFilteredConversations() {
+            return messageState.conversations.filter(conv => {
+                if (messageState.filter === 'unread' && !isConversationUnread(conv)) return false;
+                if (messageState.filter === 'starred' && !conv.starred) return false;
+                if (!messageState.query) return true;
+
+                const lookup = `${conv.supplier} ${conv.orderRef} ${getLastMessage(conv)?.text || ''}`.toLowerCase();
+                return lookup.includes(messageState.query.toLowerCase());
+            });
+        }
+
+        function renderOverviewCards() {
+            const overview = document.getElementById('messages-overview');
+            if (!overview) return;
+
+            const total = messageState.conversations.length;
+            const unread = messageState.conversations.filter(isConversationUnread).length;
+            const starred = messageState.conversations.filter(conv => conv.starred).length;
+
+            overview.innerHTML = `
+                <div class="bg-white rounded-xl border border-gray-100 p-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Conversations</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">${total}</p>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 p-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Unread</p>
+                    <p class="text-2xl font-bold text-[#FF6A00] mt-1">${unread}</p>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 p-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Starred</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">${starred}</p>
+                </div>
+            `;
+        }
+
+        function renderConversationsList() {
+            const list = document.getElementById('messages-list');
+            const filteredConversations = getFilteredConversations();
+
+            if (filteredConversations.length === 0) {
+                list.innerHTML = `
+                    <div class="p-6 text-center text-gray-500 text-sm">
+                        No conversations found for this filter.
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = filteredConversations.map(conv => {
+                const last = getLastMessage(conv);
+                const isActive = conv.id === messageState.selectedId;
+                const unread = isConversationUnread(conv);
+                return `
+                    <div class="p-4 cursor-pointer transition-colors border-l-4 ${isActive ? 'border-[#FF6A00] bg-orange-50' : 'border-transparent hover:border-[#FF6A00] hover:bg-orange-50/60'}" data-conversation-id="${conv.id}">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-full bg-orange-100 text-[#FF6A00] font-bold text-sm flex items-center justify-center flex-shrink-0">${conv.avatar}</div>
+                            <div class="flex-grow min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h3 class="font-semibold text-gray-900 truncate">${conv.supplier}</h3>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <button class="star-conversation-btn text-sm ${conv.starred ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'}" data-star-id="${conv.id}" aria-label="Toggle star">★</button>
+                                        <span class="text-xs text-gray-500">${last ? last.time : ''}</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">${conv.orderRef}</p>
+                                <div class="flex items-center justify-between gap-2 mt-2">
+                                    <p class="text-sm text-gray-600 truncate">${last ? last.text : 'No messages yet'}</p>
+                                    ${unread ? '<span class="w-2 h-2 rounded-full bg-[#FF6A00] flex-shrink-0"></span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            list.querySelectorAll('[data-conversation-id]').forEach(item => {
+                item.addEventListener('click', () => selectConversation(Number(item.dataset.conversationId)));
+            });
+
+            list.querySelectorAll('.star-conversation-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    toggleStar(Number(button.dataset.starId));
+                });
+            });
+        }
+
+        function renderThreadHeader(conv) {
+            const header = document.getElementById('thread-header');
+            if (!conv) {
+                header.innerHTML = '<div class="text-center text-gray-500 text-sm">Select a conversation to start messaging</div>';
+                return;
+            }
+
+            header.innerHTML = `
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <button id="thread-back-btn" class="md:hidden px-2 py-1 text-sm rounded-lg border border-gray-200 hover:bg-gray-50">←</button>
+                        <div class="w-11 h-11 rounded-full bg-orange-100 text-[#FF6A00] font-bold flex items-center justify-center">${conv.avatar}</div>
+                        <div class="min-w-0">
+                            <h2 class="font-bold text-gray-900 truncate">${conv.supplier}</h2>
+                            <p class="text-xs text-gray-500 flex items-center gap-2">
+                                <span class="inline-block w-2 h-2 rounded-full ${conv.online ? 'bg-green-500' : 'bg-gray-300'}"></span>
+                                ${conv.online ? 'Online now' : 'Last seen recently'} • ${conv.orderRef}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="mark-read-btn" class="text-xs px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Mark as read</button>
+                        <button id="clear-chat-btn" class="text-xs px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Clear chat</button>
+                    </div>
+                </div>
+            `;
+
+            const backBtn = document.getElementById('thread-back-btn');
+            if (backBtn) backBtn.addEventListener('click', closeMobileThread);
+            document.getElementById('mark-read-btn')?.addEventListener('click', markConversationAsRead);
+            document.getElementById('clear-chat-btn')?.addEventListener('click', clearCurrentThread);
+        }
+
+        function renderThreadMessages(conv) {
+            const thread = document.getElementById('message-thread');
+            if (!conv) {
+                thread.innerHTML = `
+                    <div class="h-full flex items-center justify-center text-gray-500 text-center">
+                        <div>
+                            <p class="font-semibold mb-1">No conversation selected</p>
+                            <p class="text-sm">Choose a supplier from the left panel to start chatting.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let lastDate = '';
+            thread.innerHTML = `
+                <div class="flex flex-col gap-4">
+                    ${conv.messages.map(msg => {
+                        const dateDivider = msg.date !== lastDate ? `
+                            <div class="text-center">
+                                <span class="inline-block bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">${msg.date}</span>
+                            </div>
+                        ` : '';
+                        lastDate = msg.date;
+                        return `
+                            ${dateDivider}
+                            <div class="flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}">
+                                <div class="${msg.from === 'me' ? 'bg-[#FF6A00] text-white' : 'bg-white border border-gray-200 text-gray-800'} rounded-2xl p-4 max-w-[80%] shadow-sm">
+                                    <p class="text-sm leading-relaxed">${msg.text}</p>
+                                    <span class="text-[11px] ${msg.from === 'me' ? 'text-orange-100' : 'text-gray-500'} mt-2 block ${msg.from === 'me' ? 'text-right' : ''}">${msg.time}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            thread.scrollTop = thread.scrollHeight;
+        }
+
+        function renderQuickReplies() {
+            const container = document.getElementById('quick-replies');
+            if (!messageState.selectedId) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = quickReplyPresets.map(text => `
+                <button class="quick-reply-btn px-3 py-2 text-xs bg-orange-50 text-[#FF6A00] rounded-full border border-orange-200 hover:bg-orange-100 transition-colors whitespace-nowrap">${text}</button>
+            `).join('');
+
+            container.querySelectorAll('.quick-reply-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const input = document.getElementById('message-input');
+                    input.value = btn.textContent.trim();
+                    input.focus();
+                });
+            });
+        }
+
+        function updateComposerState() {
+            const enabled = Boolean(messageState.selectedId);
+            document.getElementById('message-input').disabled = !enabled;
+            document.getElementById('send-message-btn').disabled = !enabled;
+            document.getElementById('emoji-toggle-btn').disabled = !enabled;
+            document.getElementById('attach-btn').disabled = !enabled;
+        }
+
+        function openMobileThreadIfNeeded() {
+            if (window.innerWidth >= 768) return;
+            messageState.isMobileThreadOpen = true;
+            document.getElementById('conversation-panel').classList.add('hidden');
+            document.getElementById('thread-panel').classList.remove('hidden');
+        }
+
+        function closeMobileThread() {
+            messageState.isMobileThreadOpen = false;
+            document.getElementById('thread-panel').classList.add('hidden');
+            document.getElementById('conversation-panel').classList.remove('hidden');
+        }
+
+        function handleMobileLayout() {
+            const conversationPanel = document.getElementById('conversation-panel');
+            const threadPanel = document.getElementById('thread-panel');
+
+            if (window.innerWidth < 768) {
+                if (messageState.isMobileThreadOpen && messageState.selectedId) {
+                    conversationPanel.classList.add('hidden');
+                    threadPanel.classList.remove('hidden');
+                } else {
+                    threadPanel.classList.add('hidden');
+                    conversationPanel.classList.remove('hidden');
+                }
+            } else {
+                conversationPanel.classList.remove('hidden');
+                threadPanel.classList.remove('hidden');
+            }
+        }
+
+        function selectConversation(convId) {
+            messageState.selectedId = convId;
+            const selected = getConversationById(convId);
+            if (!selected) return;
+            const last = getLastMessage(selected);
+            if (last && last.from === 'supplier' && selected.lastReadMessageId !== last.id) {
+                selected.lastReadMessageId = last.id;
+                saveMessageState();
+            }
+
+            renderThreadHeader(selected);
+            renderThreadMessages(selected);
+            renderQuickReplies();
+            updateComposerState();
+            openMobileThreadIfNeeded();
+            renderConversationsList();
+            renderOverviewCards();
+        }
+
+        function toggleStar(convId) {
+            const conv = getConversationById(convId);
+            if (!conv) return;
+            conv.starred = !conv.starred;
+            saveMessageState();
+            renderConversationsList();
+            renderOverviewCards();
+        }
+
+        function markConversationAsRead() {
+            const conv = getConversationById(messageState.selectedId);
+            if (!conv) return;
+
+            const last = getLastMessage(conv);
+            if (last && last.from === 'supplier') {
+                conv.lastReadMessageId = last.id;
+                saveMessageState();
+                renderThreadMessages(conv);
+                renderConversationsList();
+                renderOverviewCards();
+            }
+        }
+
+        function clearCurrentThread() {
+            const conv = getConversationById(messageState.selectedId);
+            if (!conv) return;
+            conv.messages = [
+                {
+                    id: Date.now(),
+                    from: 'supplier',
+                    text: 'Chat history was cleared. You can continue here anytime.',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    date: 'Today'
+                }
+            ];
+            saveMessageState();
+            renderThreadMessages(conv);
+            renderConversationsList();
+        }
+
+        function appendMessageToCurrentConversation(text, from = 'me') {
+            const conv = getConversationById(messageState.selectedId);
+            if (!conv) return;
+
+            conv.messages.push({
+                id: Date.now(),
+                from,
+                text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                date: 'Today'
+            });
+
+            saveMessageState();
+            renderThreadMessages(conv);
+            renderConversationsList();
+            renderOverviewCards();
+        }
+
+        function simulateAutoReply() {
+            const indicator = document.getElementById('typing-indicator');
+            indicator.classList.remove('hidden');
+
+            setTimeout(() => {
+                indicator.classList.add('hidden');
+                appendMessageToCurrentConversation('Thanks for the message. Our team is checking and will confirm shortly.', 'supplier');
+            }, 1600);
+        }
+
+        function sendCurrentMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (!text || !messageState.selectedId) return;
+
+            appendMessageToCurrentConversation(text, 'me');
+            input.value = '';
+
+            if (messageState.attachedFileName) {
+                const attachmentName = messageState.attachedFileName;
+                appendMessageToCurrentConversation(`Attached file: ${attachmentName}`, 'me');
+                messageState.attachedFileName = '';
+                document.getElementById('attachment-name').classList.add('hidden');
+                document.getElementById('attachment-name').textContent = '';
+                document.getElementById('attachment-input').value = '';
+            }
+
+            simulateAutoReply();
+        }
+
+        function setupEventHandlers() {
+            document.getElementById('send-message-btn').addEventListener('click', sendCurrentMessage);
+            document.getElementById('message-input').addEventListener('keydown', event => {
+                if (event.key === 'Enter') sendCurrentMessage();
+            });
+
+            document.getElementById('conversation-search').addEventListener('input', event => {
+                messageState.query = event.target.value;
+                renderConversationsList();
+            });
+
+            document.querySelectorAll('.message-filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    messageState.filter = button.dataset.filter;
+                    document.querySelectorAll('.message-filter-btn').forEach(btn => {
+                        btn.className = 'message-filter-btn bg-gray-100 text-gray-700 text-xs font-semibold py-2 rounded-lg hover:bg-gray-200 transition-colors';
+                    });
+                    button.className = 'message-filter-btn bg-[#FF6A00] text-white text-xs font-semibold py-2 rounded-lg';
+                    renderConversationsList();
+                });
+            });
+
+            const emojiPicker = document.getElementById('emoji-picker');
+            document.getElementById('emoji-toggle-btn').addEventListener('click', () => {
+                emojiPicker.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('.emoji-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const input = document.getElementById('message-input');
+                    input.value += button.textContent;
+                    input.focus();
+                });
+            });
+
+            document.getElementById('attach-btn').addEventListener('click', () => {
+                document.getElementById('attachment-input').click();
+            });
+
+            document.getElementById('attachment-input').addEventListener('change', event => {
+                const file = event.target.files[0];
+                if (!file) return;
+                messageState.attachedFileName = file.name;
+                const badge = document.getElementById('attachment-name');
+                badge.textContent = `Ready: ${file.name}`;
+                badge.classList.remove('hidden');
+            });
+
+            document.getElementById('new-message-btn').addEventListener('click', () => {
+                alert('New message composer can be connected to supplier directory next.');
+            });
+
+            window.addEventListener('resize', handleMobileLayout);
+        }
+
+        function initMessagesPage() {
+            renderOverviewCards();
+            renderConversationsList();
+            renderThreadHeader(null);
+            renderThreadMessages(null);
+            renderQuickReplies();
+            updateComposerState();
+            setupEventHandlers();
+            handleMobileLayout();
+        }
+
+        initMessagesPage();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
