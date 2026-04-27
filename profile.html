@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            500: '#FF6A00',
+                            600: '#e65f00'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>My Profile - Union Market</title>
+</head>
+<body class="bg-[#f4f4f4] dark:bg-[#0a0a0a] transition-colors duration-300 min-h-screen" id="body-element">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <header id="main-header" class="fixed top-0 w-full z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+        <div class="flex items-center justify-between px-6 md:px-8 py-4 max-w-[1440px] mx-auto">
+<a href="index.html" class="text-3xl font-bold text-[#FF6A00] tracking-tight">Union Market</a>
+            <div class="flex items-center gap-3">
+<a href="index.html" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[#FF6A00] transition-colors">Home</a>
+                <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
+                    <svg id="sun-icon" class="w-5 h-5 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.536l1.414 1.414a1 1 0 111.414-1.414l-1.414-1.414zM2.05 6.464l1.414-1.414a1 1 0 00-1.414-1.414L.636 5.05a1 1 0 101.414 1.414z" clip-rule="evenodd"></path></svg>
+                    <svg id="moon-icon" class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a1 1 0 00-1.414 1.414A6 6 0 1015.879 15.879a1 1 0 001.414-1.414z"></path></svg>
+                </button>
+                <button onclick="logout()" class="px-4 py-2 rounded-lg bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-bottom-nav fixed bottom-0 left-0 right-0 md:hidden bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 z-40 shadow-2xl">
+        <div class="flex items-center justify-around py-3">
+<a href="index.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Home</span></a>
+            <a href="products.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Shop</span></a>
+            <a href="cart.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors relative"><span class="absolute -top-1 -right-1 bg-[#FF6A00] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center" id="cart-count-mobile">0</span><span class="text-xs mt-1">Cart</span></a>
+            <a href="wishlist.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Wishlist</span></a>
+            <a href="profile.html" class="flex flex-col items-center text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Account</span></a>
+        </div>
+    </div>
+
+    <main id="main-content" class="pt-28 pb-24 md:pb-12">
+        <div class="max-w-5xl mx-auto px-4">
+            <section class="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100 dark:border-gray-800 mb-8">
+                <div class="flex items-start md:items-center gap-5 md:gap-6 flex-col md:flex-row">
+                    <div id="user-avatar" class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-[#FF6A00] to-orange-600 text-white text-3xl md:text-4xl font-black flex items-center justify-center shadow-lg shadow-orange-500/20">U</div>
+                    <div class="flex-grow">
+                        <h1 id="user-name-display" class="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">Account Profile</h1>
+                        <p id="user-email-display" class="text-gray-500 dark:text-gray-400 text-sm md:text-base">Manage your orders and account settings</p>
+                        <p id="user-provider-display" class="text-xs text-[#FF6A00] font-bold mt-1 uppercase tracking-wide">Email Account</p>
+                    </div>
+                    <button onclick="openEditModal()" class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-all">
+                        Edit Profile
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Orders</p>
+                        <p id="stat-orders" class="text-3xl font-black text-gray-900 dark:text-white">0</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Wishlist Items</p>
+                        <p id="stat-wishlist" class="text-3xl font-black text-gray-900 dark:text-white">0</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-orange-100 dark:border-orange-900/30">
+                        <p class="text-[10px] font-bold text-[#FF6A00] uppercase tracking-widest mb-1">Lifetime Spent</p>
+                        <p id="stat-spent" class="text-3xl font-black text-[#FF6A00]">MWK 0</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 border-t border-gray-100 dark:border-gray-800 pt-6">
+                    <h2 class="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wide">Account Information</h2>
+                    <div id="account-details" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+
+                <div class="mt-8 border-t border-gray-100 dark:border-gray-800 pt-6">
+                    <h2 class="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wide">Seller Tools</h2>
+                    <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900/30 rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <p class="text-base font-bold text-gray-900 dark:text-white">Start selling on Union Market</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Upload products, manage inventory, and run your own storefront listings.</p>
+                        </div>
+                        <a href="seller-dashboard.html" class="inline-flex items-center justify-center px-5 py-2.5 bg-[#FF6A00] text-white rounded-xl font-bold hover:bg-[#e65f00] transition-colors whitespace-nowrap">
+                            Open Seller Dashboard
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-5">Order History</h2>
+                <div id="transaction-history" class="space-y-4"></div>
+            </section>
+        </div>
+    </main>
+
+    <div id="edit-profile-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl p-8 m-4 border border-gray-200 dark:border-gray-800">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Edit Profile</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="edit-name" class="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
+                    <input type="text" id="edit-name" autocomplete="name" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                </div>
+                <div>
+                    <label for="edit-phone" class="block text-xs font-bold text-gray-500 uppercase mb-2">Phone Number</label>
+                    <input type="tel" id="edit-phone" autocomplete="tel" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button onclick="closeEditModal()" class="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">Cancel</button>
+                    <button onclick="saveProfileChanges()" class="flex-1 py-3 bg-[#FF6A00] text-white rounded-xl font-bold hover:bg-[#e65f00] transition-all">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function safeMoney(amount) {
+            if (typeof formatPrice === 'function') return formatPrice(amount || 0);
+            const formatter = new Intl.NumberFormat('en-MW', {
+                style: 'currency',
+                currency: 'MWK',
+                maximumFractionDigits: 0
+            });
+            return formatter.format((amount || 0) * 1750);
+        }
+
+        function getActiveUserData() {
+            return JSON.parse(localStorage.getItem('aura_current_user')) ||
+                JSON.parse(localStorage.getItem('signup_pending')) || {
+                    name: localStorage.getItem('userName') || 'Guest User',
+                    email: 'Not provided',
+                    phone: 'Not provided',
+                    provider: localStorage.getItem('aura_auth_provider') || 'Email'
+                };
+        }
+
+        function renderAccountDetails() {
+            const userData = getActiveUserData();
+            const provider = localStorage.getItem('aura_auth_provider') || userData.provider || 'Email';
+
+            document.getElementById('user-name-display').textContent = userData.name || 'Guest User';
+            document.getElementById('user-email-display').textContent = userData.email || 'Not provided';
+            document.getElementById('user-provider-display').textContent = `${provider} Account`;
+            document.getElementById('user-avatar').textContent = (userData.name || 'U').charAt(0).toUpperCase();
+
+            document.getElementById('account-details').innerHTML = `
+                <div class="bg-gray-50 dark:bg-gray-800/30 p-4 rounded-xl">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Phone Number</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">${userData.phone || 'Not provided'}</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800/30 p-4 rounded-xl">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Account Status</p>
+                    <p class="text-sm font-bold text-green-600">Verified</p>
+                </div>
+            `;
+        }
+
+        function renderProfileStats() {
+            const history = JSON.parse(localStorage.getItem('aura_transactions')) || [];
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const totalSpent = history.reduce((sum, tx) => sum + (tx.total || 0), 0);
+
+            document.getElementById('stat-orders').textContent = history.length;
+            document.getElementById('stat-wishlist').textContent = wishlist.length;
+            document.getElementById('stat-spent').textContent = safeMoney(totalSpent);
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('transaction-history');
+            const history = JSON.parse(localStorage.getItem('aura_transactions')) || [];
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-10 text-center">
+                        <p class="text-gray-500 mb-3">No transactions yet.</p>
+                        <a href="products.html" class="text-[#FF6A00] font-bold">Start Shopping</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = history.map(tx => `
+                <article class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6">
+                    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-400 uppercase tracking-widest font-bold">Order ID</p>
+                            <p class="font-black text-gray-900 dark:text-white">${tx.id || 'N/A'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-400 uppercase tracking-widest font-bold">Date</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">${tx.date || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${(tx.items || []).map(item => `
+                            <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-lg object-cover border dark:border-gray-700" title="${item.name}">
+                        `).join('')}
+                    </div>
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                        <p class="text-xs font-bold text-gray-500 uppercase">Paid via ${tx.method || 'Unknown'}</p>
+                        <p class="text-xl font-black text-[#FF6A00]">${safeMoney(tx.total || 0)}</p>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function openEditModal() {
+            const userData = getActiveUserData();
+            document.getElementById('edit-name').value = userData.name || '';
+            document.getElementById('edit-phone').value = userData.phone || '';
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+        }
+
+        function saveProfileChanges() {
+            const newName = document.getElementById('edit-name').value.trim();
+            const newPhone = document.getElementById('edit-phone').value.trim();
+
+            if (!newName || !newPhone) {
+                if (typeof showToast === 'function') showToast('Name and phone are required', 'error');
+                return;
+            }
+
+            let userData = getActiveUserData();
+            userData.name = newName;
+            userData.phone = newPhone;
+
+            const accounts = JSON.parse(localStorage.getItem('aura_accounts')) || [];
+            const email = (userData.email || '').toLowerCase();
+            const index = accounts.findIndex(acc => (acc.email || '').toLowerCase() === email);
+            if (index >= 0) {
+                accounts[index].name = newName;
+                accounts[index].phone = newPhone;
+                localStorage.setItem('aura_accounts', JSON.stringify(accounts));
+                userData = accounts[index];
+            }
+
+            localStorage.setItem('aura_current_user', JSON.stringify(userData));
+            localStorage.setItem('signup_pending', JSON.stringify(userData));
+            localStorage.setItem('userName', newName);
+
+            renderAccountDetails();
+            closeEditModal();
+            if (typeof showToast === 'function') showToast('Profile updated successfully!', 'success');
+        }
+
+        function logout() {
+            localStorage.removeItem('aura_user_logged_in');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('aura_auth_provider');
+            localStorage.removeItem('aura_current_user');
+            window.location.href = 'signin.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('aura_user_logged_in') !== 'true') {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            if (typeof initializeDarkMode === 'function') initializeDarkMode();
+            renderAccountDetails();
+            renderProfileStats();
+            renderTransactions();
+        });
+    </script>
+</body>
+</html>

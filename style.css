@@ -1,0 +1,630 @@
+/* AURA Express - Professional E-Commerce Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #333;
+    background-color: #f9fafb;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+}
+
+.skip-link {
+    position: fixed;
+    left: 1rem;
+    top: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.5rem;
+    background: #ff6a00;
+    color: #fff;
+    font-weight: 700;
+    z-index: 10000;
+    transform: translateY(-140%);
+    transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.mobile-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Header Sticky Enhancement */
+header {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Product Card Hover Effects */
+.group {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group:hover {
+    transform: translateY(-2px);
+}
+
+/* Gradient Text */
+.text-gradient {
+    background: linear-gradient(135deg, #FF6A00, #F85800);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Button Animations */
+button {
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Badge Animations */
+.absolute.bg-red-500 {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Toast Notification */
+.animate-bounce {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Search Input Focus */
+input:focus {
+    box-shadow: 0 0 15px rgba(255, 106, 0, 0.2);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    body {
+        color: #e5e7eb;
+    }
+}
+
+body.dark-mode {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --border-color: #334155;
+}
+
+/* Hero Carousel Animations */
+@keyframes heroSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-slide {
+    animation: heroSlideIn 0.6s ease-out;
+}
+
+/* Smooth Carousel Transition */
+#hero-carousel {
+    scroll-behavior: smooth;
+}
+
+/* Micro-interactions - Button States */
+button:active {
+    filter: brightness(0.95);
+}
+
+button:focus-visible {
+    outline: 2px solid #FF6A00;
+    outline-offset: 2px;
+}
+
+/* Text Smooth Rendering */
+body, button, input, select, textarea {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skeleton Loading Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(to right, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+    background-size: 1000px 100%;
+}
+
+/* Smooth Page Transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Scroll Reveal Animation */
+@keyframes scrollReveal {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.scroll-reveal {
+    animation: scrollReveal 0.6s ease-out;
+}
+
+/* Floating Action Button Animation */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.float-btn {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Quick View Modal Styles */
+.modal-overlay {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Dropdown Menu Slide */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu {
+    animation: slideDown 0.2s ease-out;
+}
+
+/* Product Card Hover Glow */
+.product-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(255, 106, 0, 0.15);
+}
+
+/* Smooth Color Transitions */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Disable transition on scroll performance-sensitive elements */
+.no-transition {
+    transition: none !important;
+}
+
+/* Badge Pulse with Custom Color */
+.badge-pulse {
+    animation: badgePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Trust Badge Hover Effect */
+.trust-badge {
+    transition: all 0.3s ease;
+}
+
+.trust-badge:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Font Sizes */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.875rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    h3 {
+        font-size: 1.25rem;
+    }
+    body {
+        font-size: 0.95rem;
+    }
+}
+
+/* Accessibility - Focus Visible */
+button:focus-visible,
+link:focus-visible,
+a:focus-visible {
+    outline: 2px solid #FF6A00;
+    outline-offset: 3px;
+}
+
+/* Smooth Overflow Scroll */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-track:dark {
+    background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #FF6A00;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #e65f00;
+}
+
+/* Product Card Shadow on Hover */
+.hover\:shadow-lg:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Category Grid Hover */
+[class*="bg-gray-50"]:hover {
+    transform: translateY(-4px);
+}
+
+/* Flash Sale Banner */
+.bg-gradient-to-r {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Scroll Bar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #FF6A00;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #e65f00;
+}
+
+/* Loading Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Image Loading State */
+img {
+    transition: opacity 0.3s ease;
+}
+
+img.lazy {
+    opacity: 0;
+}
+
+img.lazy.loaded {
+    opacity: 1;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.875rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    h3 {
+        font-size: 1.125rem;
+    }
+}
+
+/* Footer Links Hover */
+footer a {
+    position: relative;
+}
+
+footer a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #FF6A00;
+    transition: width 0.3s ease;
+}
+
+footer a:hover::after {
+    width: 100%;
+}
+
+/* Star Rating Color */
+.text-yellow-400 {
+    color: #fbbf24;
+}
+
+/* Line Clamp Fallback */
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Vendor Prefix Support */
+*::placeholder {
+    color: #9ca3af;
+}
+
+/* Smooth Transitions */
+* {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Accessibility - Focus Visible */
+*:focus-visible {
+    outline: 2px solid #FF6A00;
+    outline-offset: 2px;
+}
+
+/* Container Queries for Responsive */
+@supports (container-type: inline-size) {
+    @container (min-width: 400px) {
+        .sm\:text-lg {
+            font-size: 1.125rem;
+        }
+    }
+}
+
+/* Price Range Slider Styling */
+#price-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #FF6A00, #e65f00);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+#price-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid #FF6A00;
+    box-shadow: 0 2px 8px rgba(255, 106, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+#price-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(255, 106, 0, 0.4);
+}
+
+#price-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid #FF6A00;
+    box-shadow: 0 2px 8px rgba(255, 106, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+#price-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(255, 106, 0, 0.4);
+}
+
+/* Price Input Styling */
+#price-min, #price-max {
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+#price-min:focus, #price-max:focus {
+    box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.15);
+}
+
+@media (max-width: 640px) {
+    .mobile-bottom-nav > div {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.125rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+
+    .mobile-bottom-nav a {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        padding-left: 0.15rem;
+        padding-right: 0.15rem;
+        min-height: 3.1rem;
+    }
+
+    .mobile-bottom-nav a span {
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1;
+        font-size: 0.66rem;
+    }
+
+    .mobile-bottom-nav a svg {
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+}

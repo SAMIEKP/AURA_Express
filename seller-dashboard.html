@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            500: '#FF6A00',
+                            600: '#e65f00'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Seller Dashboard - Union Market</title>
+</head>
+<body class="bg-[#f4f4f4] dark:bg-[#0a0a0a] transition-colors duration-300 min-h-screen" id="body-element">
+    <header class="fixed top-0 w-full z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+        <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 max-w-[1440px] mx-auto gap-3">
+            <a href="index.html" class="text-2xl md:text-3xl font-bold text-[#FF6A00] tracking-tight">Union Market</a>
+            <div class="flex items-center gap-2 md:gap-4">
+                <a href="products.html" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[#FF6A00] transition-colors">Shop</a>
+                <a href="profile.html" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[#FF6A00] transition-colors">Profile</a>
+                <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all" aria-label="Toggle dark mode">
+                    <svg id="sun-icon" class="w-5 h-5 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.536l1.414 1.414a1 1 0 111.414-1.414l-1.414-1.414zM2.05 6.464l1.414-1.414a1 1 0 00-1.414-1.414L.636 5.05a1 1 0 101.414 1.414z" clip-rule="evenodd"></path></svg>
+                    <svg id="moon-icon" class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a1 1 0 00-1.414 1.414A6 6 0 1015.879 15.879a1 1 0 001.414-1.414z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-28 pb-14">
+        <div class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <section class="bg-gradient-to-r from-[#FF6A00] to-orange-600 rounded-3xl px-6 py-8 md:px-8 md:py-10 text-white shadow-xl shadow-orange-500/20">
+                <h1 class="text-3xl md:text-4xl font-black">Seller Dashboard</h1>
+                <p class="mt-3 text-orange-100 max-w-3xl">Create listings, upload product images, manage inventory, and monitor your store performance from one place.</p>
+                <div class="mt-5 flex flex-wrap gap-2 text-xs">
+                    <span class="px-3 py-1 rounded-full bg-white/20">Image uploads</span>
+                    <span class="px-3 py-1 rounded-full bg-white/20">Inventory tracking</span>
+                    <span class="px-3 py-1 rounded-full bg-white/20">Pause/activate listings</span>
+                    <span class="px-3 py-1 rounded-full bg-white/20">Low-stock alerts</span>
+                </div>
+            </section>
+
+            <section id="seller-stats-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></section>
+
+            <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="xl:col-span-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-6 gap-3">
+                        <h2 class="text-2xl font-black text-gray-900 dark:text-white">Add / Edit Product</h2>
+                        <button id="seller-reset-btn" class="text-sm font-bold text-[#FF6A00] hover:underline">Reset form</button>
+                    </div>
+
+                    <form id="seller-product-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label for="seller-product-name" class="block text-xs font-bold uppercase text-gray-500 mb-2">Product Name</label>
+                                <input id="seller-product-name" name="name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="e.g. Premium Wireless Earbuds">
+                            </div>
+                            <div>
+                                <label for="seller-category" class="block text-xs font-bold uppercase text-gray-500 mb-2">Category</label>
+                                <select id="seller-category" name="category" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                                    <option>Electronics</option>
+                                    <option>Fashion</option>
+                                    <option>Home &amp; Garden</option>
+                                    <option>Sports</option>
+                                    <option>Beauty</option>
+                                    <option>Gaming</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="seller-sku" class="block text-xs font-bold uppercase text-gray-500 mb-2">SKU (Optional)</label>
+                                <input id="seller-sku" name="sku" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="UNION-001">
+                            </div>
+                            <div>
+                                <label for="seller-price" class="block text-xs font-bold uppercase text-gray-500 mb-2">Price (USD)</label>
+                                <input id="seller-price" name="price" type="number" step="0.01" min="0.01" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="49.99">
+                            </div>
+                            <div>
+                                <label for="seller-original-price" class="block text-xs font-bold uppercase text-gray-500 mb-2">Original Price (USD)</label>
+                                <input id="seller-original-price" name="originalPrice" type="number" step="0.01" min="0" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="59.99">
+                            </div>
+                            <div>
+                                <label for="seller-inventory" class="block text-xs font-bold uppercase text-gray-500 mb-2">Inventory Units</label>
+                                <input id="seller-inventory" name="inventory" type="number" min="0" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="20">
+                            </div>
+                            <div>
+                                <label for="seller-shipping-days" class="block text-xs font-bold uppercase text-gray-500 mb-2">Shipping Time (Days)</label>
+                                <input id="seller-shipping-days" name="shippingDays" type="number" min="1" max="30" value="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="3">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="seller-description" class="block text-xs font-bold uppercase text-gray-500 mb-2">Product Description</label>
+                                <textarea id="seller-description" name="description" rows="4" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="Write a short product description..."></textarea>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="seller-image-input" class="block text-xs font-bold uppercase text-gray-500 mb-2">Product Image</label>
+                                <input id="seller-image-input" name="image" type="file" accept="image/*" class="block w-full text-sm text-gray-600 dark:text-gray-300 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-[#FF6A00] file:text-white file:font-bold hover:file:bg-[#e65f00]">
+                                <p class="text-xs text-gray-500 mt-2">Tip: Use a clear square image for best storefront display.</p>
+                                <img id="seller-image-preview" alt="Product preview" class="hidden mt-4 w-36 h-36 rounded-xl object-cover border border-gray-200 dark:border-gray-700">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full md:w-auto px-7 py-3 bg-[#FF6A00] text-white rounded-xl font-bold hover:bg-[#e65f00] transition-colors">
+                            <span id="seller-submit-label">Publish Product</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="space-y-6">
+                    <section class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6">
+                        <h2 class="text-lg font-black text-gray-900 dark:text-white mb-4">Seller Profile</h2>
+                        <form id="seller-profile-form" class="space-y-3">
+                            <input name="sellerName" placeholder="Seller name" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                            <input name="shopName" placeholder="Shop name" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                            <input name="email" type="email" placeholder="Shop email" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                            <input name="phone" placeholder="Business phone" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                            <button type="submit" class="w-full px-4 py-2.5 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity">Save Profile</button>
+                        </form>
+                    </section>
+
+                    <section class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6">
+                        <h2 class="text-lg font-black text-gray-900 dark:text-white mb-4">Inventory Alerts</h2>
+                        <ul id="seller-low-stock-list" class="text-sm"></ul>
+                    </section>
+
+                    <section class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6">
+                        <h2 class="text-lg font-black text-gray-900 dark:text-white mb-3">Seller Tools</h2>
+                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                            <li>1. Publish products with image uploads</li>
+                            <li>2. Pause listings when stock is unavailable</li>
+                            <li>3. Update SKU and shipping days</li>
+                            <li>4. Track low-stock products quickly</li>
+                        </ul>
+                    </section>
+                </div>
+            </section>
+
+            <section class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6 gap-3">
+                    <h2 class="text-2xl font-black text-gray-900 dark:text-white">Your Listings</h2>
+                    <a href="products.html" class="text-sm font-bold text-[#FF6A00] hover:underline">View storefront</a>
+                </div>
+                <div id="seller-empty-state" class="hidden rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center text-gray-500">
+                    No listings yet. Add your first product above.
+                </div>
+                <div id="seller-products-list" class="space-y-4"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="seller-marketplace.js"></script>
+</body>
+</html>

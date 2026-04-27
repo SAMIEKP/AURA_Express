@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            500: '#FF6A00',
+                            600: '#e65f00'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>My Wishlist - Union Market</title>
+</head>
+<body class="bg-[#f4f4f4] dark:bg-[#0a0a0a] transition-colors duration-300 min-h-screen" id="body-element">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div id="theme-toast" class="fixed top-4 right-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-4 py-2 rounded-full shadow-lg z-[999] hidden transition-all duration-300 text-sm font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        Dark Mode
+    </div>
+
+    <header id="main-header" class="fixed top-0 w-full z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+        <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 max-w-[1440px] mx-auto">
+<a href="index.html" id="logo" class="text-3xl font-bold text-[#FF6A00] tracking-tight whitespace-nowrap hover:opacity-80 transition-opacity">
+                Union Market
+            </a>
+            <div class="hidden md:flex items-center space-x-6 text-sm text-gray-700 dark:text-gray-300">
+                <button onclick="toggleDarkMode()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
+                    <svg id="sun-icon" class="w-6 h-6 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.536l1.414 1.414a1 1 0 111.414-1.414l-1.414-1.414zM2.05 6.464l1.414-1.414a1 1 0 00-1.414-1.414L.636 5.05a1 1 0 101.414 1.414z"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a1 1 0 00-1.414 1.414A6 6 0 1015.879 15.879a1 1 0 001.414-1.414z"></path></svg>
+                </button>
+                <a href="cart.html" class="hover:text-[#FF6A00] flex flex-col items-center relative transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span class="absolute -top-1 -right-1 bg-[#FF6A00] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center" id="cart-count">0</span>
+                    <span class="text-xs">Cart</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav fixed bottom-0 left-0 right-0 md:hidden bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 z-40 shadow-2xl">
+        <div class="flex items-center justify-around py-3">
+<a href="index.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-xs mt-1">Home</span>
+            </a>
+            <a href="products.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <span class="text-xs mt-1">Shop</span>
+            </a>
+            <a href="wishlist.html" class="flex flex-col items-center text-[#FF6A00] transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                <span class="text-xs mt-1">Wishlist</span>
+            </a>
+        </div>
+    </div>
+
+    <main id="main-content" class="pt-32 pb-24 px-4 md:px-8 max-w-[1440px] mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Wishlist</h1>
+            <span id="wishlist-total" class="text-gray-600 dark:text-gray-400 font-medium">0 items</span>
+        </div>
+
+        <div id="wishlist-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+
+        <div id="empty-wishlist" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Your wishlist is empty</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-sm">Explore our products and find something you love!</p>
+            <a href="products.html" class="bg-[#FF6A00] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#e65f00] transition-all transform hover:scale-105 active:scale-95 shadow-lg">Browse Shop</a>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
