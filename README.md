@@ -29,7 +29,6 @@
 ### **Interactive Features**
 - ✅ **LocalStorage Sync**: Cart, wishlist, user data persist across sessions
 - ✅ **Mobile Responsive**: Perfect on all devices with bottom nav
-- ✅ **Dark Mode**: Toggle + auto-detection
 - ✅ **Real-time Cart Counter**: Updates site-wide
 - ✅ **Advanced Search & Filters**: Category, price range, rating, stock status
 - ✅ **Product Comparison**: Select + compare modal

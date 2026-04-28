@@ -52,6 +52,10 @@
         return Math.round((Number(amount) || 0) * USD_TO_MWK_RATE);
     }
 
+    function fromMwk(amount) {
+        return (Number(amount) || 0) / USD_TO_MWK_RATE;
+    }
+
     function discountFromPrices(price, originalPrice) {
         if (!originalPrice || originalPrice <= price) return 0;
         return Math.round(((originalPrice - price) / originalPrice) * 100);
@@ -272,8 +276,8 @@
         form.elements.name.value = product.name || '';
         form.elements.description.value = product.description || '';
         form.elements.category.value = product.category || 'Electronics';
-        form.elements.price.value = product.price || '';
-        form.elements.originalPrice.value = product.originalPrice || '';
+        form.elements.price.value = product.price ? Math.round(toMwk(product.price)) : '';
+        form.elements.originalPrice.value = product.originalPrice ? Math.round(toMwk(product.originalPrice)) : '';
         form.elements.inventory.value = product.inventory || 1;
         form.elements.shippingDays.value = product.shippingDays || 3;
         form.elements.sku.value = product.sku || '';
@@ -315,8 +319,8 @@
             name: form.elements.name.value,
             description: form.elements.description.value,
             category: form.elements.category.value,
-            price: Number(form.elements.price.value),
-            originalPrice: Number(form.elements.originalPrice.value || 0),
+            price: Number(fromMwk(form.elements.price.value).toFixed(2)),
+            originalPrice: Number(fromMwk(form.elements.originalPrice.value || 0).toFixed(2)),
             inventory: Number(form.elements.inventory.value),
             shippingDays: Number(form.elements.shippingDays.value || 3),
             sku: form.elements.sku.value,
