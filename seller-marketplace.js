@@ -11,6 +11,13 @@
     };
 
     const CATEGORY_OPTIONS = ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Beauty', 'Gaming'];
+    const dashboardFilterState = {
+        query: '',
+        status: 'all',
+        sortBy: 'latest',
+        page: 1,
+        pageSize: 10
+    };
 
     function parseJSON(value, fallback) {
         try {
@@ -151,6 +158,36 @@
         }).format(Number(mwk) || 0);
     }
 
+    function getFilteredSellerProducts(items) {
+        const query = dashboardFilterState.query.trim().toLowerCase();
+        return items.filter((item) => {
+            const byStatus = dashboardFilterState.status === 'all'
+                || (dashboardFilterState.status === 'low-stock' && Number(item.inventory) <= 5)
+                || item.status === dashboardFilterState.status;
+            if (!byStatus) return false;
+
+            if (!query) return true;
+            const haystack = `${item.name} ${item.sku} ${item.category}`.toLowerCase();
+            return haystack.includes(query);
+        });
+    }
+
+    function sortSellerProducts(items) {
+        const sorted = [...items];
+        const sortBy = dashboardFilterState.sortBy;
+        sorted.sort((a, b) => {
+            if (sortBy === 'price-desc') return (Number(b.price) || 0) - (Number(a.price) || 0);
+            if (sortBy === 'price-asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
+            if (sortBy === 'inventory-desc') return (Number(b.inventory) || 0) - (Number(a.inventory) || 0);
+            if (sortBy === 'inventory-asc') return (Number(a.inventory) || 0) - (Number(b.inventory) || 0);
+            if (sortBy === 'name-asc') return String(a.name || '').localeCompare(String(b.name || ''));
+            if (sortBy === 'name-desc') return String(b.name || '').localeCompare(String(a.name || ''));
+            if (sortBy === 'oldest') return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+        return sorted;
+    }
+
     function escapeHtml(value) {
         return String(value || '')
             .replace(/&/g, '&amp;')
@@ -176,11 +213,23 @@
     function renderDashboard() {
         const stats = getDashboardStats();
         const products = getSellerProducts();
+        const filteredProducts = getFilteredSellerProducts(products);
+        const sortedProducts = sortSellerProducts(filteredProducts);
+        const totalPages = Math.max(1, Math.ceil(sortedProducts.length / dashboardFilterState.pageSize));
+        dashboardFilterState.page = Math.min(Math.max(1, dashboardFilterState.page), totalPages);
+        const start = (dashboardFilterState.page - 1) * dashboardFilterState.pageSize;
+        const paginatedProducts = sortedProducts.slice(start, start + dashboardFilterState.pageSize);
 
         const statsEl = document.getElementById('seller-stats-grid');
         const productsEl = document.getElementById('seller-products-list');
         const emptyEl = document.getElementById('seller-empty-state');
         const lowStockEl = document.getElementById('seller-low-stock-list');
+        const filterSummaryEl = document.getElementById('seller-filter-summary');
+        const paginationSummaryEl = document.getElementById('seller-pagination-summary');
+        const pageIndicatorEl = document.getElementById('seller-page-indicator');
+        const prevBtn = document.getElementById('seller-prev-page-btn');
+        const nextBtn = document.getElementById('seller-next-page-btn');
+        const paginationControls = document.getElementById('seller-pagination-controls');
 
         if (statsEl) {
             statsEl.innerHTML = `
@@ -218,16 +267,45 @@
             }
         }
 
+        if (filterSummaryEl) {
+            filterSummaryEl.textContent = `Showing ${paginatedProducts.length} on this page (${filteredProducts.length} filtered of ${products.length} total)`;
+        }
+
+        if (paginationSummaryEl) {
+            paginationSummaryEl.textContent = `Page ${dashboardFilterState.page} of ${totalPages}`;
+        }
+        if (pageIndicatorEl) {
+            pageIndicatorEl.textContent = `Page ${dashboardFilterState.page} / ${totalPages}`;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = dashboardFilterState.page <= 1;
+            prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+            prevBtn.classList.toggle('cursor-not-allowed', prevBtn.disabled);
+        }
+        if (nextBtn) {
+            nextBtn.disabled = dashboardFilterState.page >= totalPages;
+            nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+            nextBtn.classList.toggle('cursor-not-allowed', nextBtn.disabled);
+        }
+        if (paginationControls) {
+            paginationControls.classList.toggle('hidden', filteredProducts.length === 0);
+        }
+
         if (!productsEl || !emptyEl) return;
 
-        if (products.length === 0) {
+        if (products.length === 0 || filteredProducts.length === 0) {
             productsEl.innerHTML = '';
             emptyEl.classList.remove('hidden');
+            if (products.length > 0 && filteredProducts.length === 0) {
+                emptyEl.textContent = 'No listings match your filters. Try a different search or status.';
+            } else {
+                emptyEl.textContent = 'No listings yet. Add your first product above.';
+            }
             return;
         }
 
         emptyEl.classList.add('hidden');
-        productsEl.innerHTML = products.map((item) => {
+        productsEl.innerHTML = paginatedProducts.map((item) => {
             const statusClass = item.status === 'active'
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
                 : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
@@ -248,9 +326,11 @@
                                 <span class="text-gray-500">SKU: ${escapeHtml(item.sku)}</span>
                             </div>
                         </div>
-                        <div class="flex gap-2 md:flex-col md:w-28">
+                        <div class="flex flex-wrap gap-2 md:flex-col md:w-32">
                             <button data-seller-action="edit" data-product-id="${item.id}" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors">Edit</button>
                             <button data-seller-action="toggle" data-product-id="${item.id}" class="flex-1 px-3 py-2 rounded-lg bg-[#FF6A00] text-white text-xs font-bold hover:bg-[#e65f00] transition-colors">${item.status === 'active' ? 'Pause' : 'Activate'}</button>
+                            <button data-seller-action="restock" data-product-id="${item.id}" class="flex-1 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-colors">+10 Stock</button>
+                            <button data-seller-action="duplicate" data-product-id="${item.id}" class="flex-1 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold hover:bg-blue-100 transition-colors">Duplicate</button>
                             <button data-seller-action="delete" data-product-id="${item.id}" class="flex-1 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors">Delete</button>
                         </div>
                     </div>
@@ -268,6 +348,18 @@
         });
     }
 
+    function setImagePreview(source) {
+        const preview = document.getElementById('seller-image-preview');
+        if (!preview) return;
+        if (!source) {
+            preview.src = '';
+            preview.classList.add('hidden');
+            return;
+        }
+        preview.src = source;
+        preview.classList.remove('hidden');
+    }
+
     function fillFormWithProduct(product) {
         const form = document.getElementById('seller-product-form');
         if (!form || !product) return;
@@ -282,11 +374,7 @@
         form.elements.shippingDays.value = product.shippingDays || 3;
         form.elements.sku.value = product.sku || '';
 
-        const preview = document.getElementById('seller-image-preview');
-        if (preview && product.image) {
-            preview.src = product.image;
-            preview.classList.remove('hidden');
-        }
+        if (product.image) setImagePreview(product.image);
 
         const submitLabel = document.getElementById('seller-submit-label');
         if (submitLabel) submitLabel.textContent = 'Update Product';
@@ -300,11 +388,7 @@
         form.reset();
         delete form.dataset.editId;
 
-        const preview = document.getElementById('seller-image-preview');
-        if (preview) {
-            preview.src = '';
-            preview.classList.add('hidden');
-        }
+        setImagePreview('');
 
         const submitLabel = document.getElementById('seller-submit-label');
         if (submitLabel) submitLabel.textContent = 'Publish Product';
@@ -378,6 +462,30 @@
             return;
         }
 
+        if (action === 'restock') {
+            const nextInventory = Number(product.inventory || 0) + 10;
+            updateSellerProduct(productId, { inventory: nextInventory, stock: nextInventory <= 5 ? 'low-stock' : 'in-stock' });
+            if (typeof showToast === 'function') showToast(`${product.name} stock increased to ${nextInventory}.`, 'success');
+            renderDashboard();
+            return;
+        }
+
+        if (action === 'duplicate') {
+            const duplicated = {
+                ...product,
+                name: `${product.name} (Copy)`,
+                sku: `${product.sku}-COPY`,
+                status: 'paused'
+            };
+            delete duplicated.id;
+            delete duplicated.createdAt;
+            delete duplicated.updatedAt;
+            addSellerProduct(duplicated);
+            if (typeof showToast === 'function') showToast('Listing duplicated as paused copy.', 'success');
+            renderDashboard();
+            return;
+        }
+
         if (action === 'delete') {
             const ok = window.confirm(`Delete "${product.name}"? This cannot be undone.`);
             if (!ok) return;
@@ -410,11 +518,78 @@
         renderDashboard();
     }
 
+    function exportListingsJSON() {
+        const products = sortSellerProducts(getFilteredSellerProducts(getSellerProducts()));
+        const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `seller-listings-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+        if (typeof showToast === 'function') showToast('Listings exported.', 'success');
+    }
+
+    function exportListingsCSV() {
+        const products = sortSellerProducts(getFilteredSellerProducts(getSellerProducts()));
+        const headers = ['id', 'name', 'category', 'sku', 'status', 'price_mwk', 'inventory', 'shipping_days', 'created_at', 'updated_at'];
+        const escapeCsv = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+        const rows = products.map((item) => ([
+            item.id,
+            item.name,
+            item.category,
+            item.sku,
+            item.status,
+            Math.round(toMwk(item.price)),
+            item.inventory,
+            item.shippingDays,
+            item.createdAt,
+            item.updatedAt
+        ].map(escapeCsv).join(',')));
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `seller-listings-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+        if (typeof showToast === 'function') showToast('CSV exported.', 'success');
+    }
+
+    function renderAuthPanel() {
+        const loginBtn = document.getElementById('seller-login-btn');
+        const profileBtn = document.getElementById('seller-profile-btn');
+        const profileName = document.getElementById('seller-profile-name');
+        const profileAvatar = document.getElementById('seller-profile-avatar');
+        if (!loginBtn || !profileBtn) return;
+
+        const isLoggedIn = localStorage.getItem('aura_user_logged_in') === 'true';
+        if (isLoggedIn) {
+            const user = parseJSON(localStorage.getItem('aura_current_user'), null);
+            const name = (user && user.name) || localStorage.getItem('userName') || 'Profile';
+            loginBtn.classList.add('hidden');
+            profileBtn.classList.remove('hidden');
+            profileBtn.classList.add('inline-flex');
+            if (profileName) profileName.textContent = name;
+            if (profileAvatar) profileAvatar.textContent = String(name).charAt(0).toUpperCase();
+        } else {
+            loginBtn.classList.remove('hidden');
+            profileBtn.classList.add('hidden');
+            profileBtn.classList.remove('inline-flex');
+        }
+    }
+
     function initSellerDashboard() {
         const form = document.getElementById('seller-product-form');
         if (!form) return;
 
         hydrateProfileForm();
+        renderAuthPanel();
         renderDashboard();
 
         form.addEventListener('submit', (event) => {
@@ -426,19 +601,78 @@
         document.getElementById('seller-products-list')?.addEventListener('click', handleDashboardActions);
         document.getElementById('seller-profile-form')?.addEventListener('submit', handleProfileSubmit);
         document.getElementById('seller-reset-btn')?.addEventListener('click', resetProductForm);
+        document.getElementById('seller-export-btn')?.addEventListener('click', exportListingsJSON);
+        document.getElementById('seller-export-csv-btn')?.addEventListener('click', exportListingsCSV);
+        document.getElementById('seller-clear-filters-btn')?.addEventListener('click', () => {
+            dashboardFilterState.query = '';
+            dashboardFilterState.status = 'all';
+            dashboardFilterState.sortBy = 'latest';
+            dashboardFilterState.page = 1;
+            dashboardFilterState.pageSize = 10;
+            const searchInput = document.getElementById('seller-listing-search');
+            const statusSelect = document.getElementById('seller-status-filter');
+            const sortSelect = document.getElementById('seller-sort-by');
+            const pageSizeSelect = document.getElementById('seller-page-size');
+            if (searchInput) searchInput.value = '';
+            if (statusSelect) statusSelect.value = 'all';
+            if (sortSelect) sortSelect.value = 'latest';
+            if (pageSizeSelect) pageSizeSelect.value = '10';
+            renderDashboard();
+        });
+
+        document.getElementById('seller-listing-search')?.addEventListener('input', (event) => {
+            dashboardFilterState.query = event.target.value || '';
+            dashboardFilterState.page = 1;
+            renderDashboard();
+        });
+
+        document.getElementById('seller-status-filter')?.addEventListener('change', (event) => {
+            dashboardFilterState.status = event.target.value || 'all';
+            dashboardFilterState.page = 1;
+            renderDashboard();
+        });
+
+        document.getElementById('seller-sort-by')?.addEventListener('change', (event) => {
+            dashboardFilterState.sortBy = event.target.value || 'latest';
+            dashboardFilterState.page = 1;
+            renderDashboard();
+        });
+
+        document.getElementById('seller-page-size')?.addEventListener('change', (event) => {
+            const parsed = Number(event.target.value);
+            dashboardFilterState.pageSize = Number.isFinite(parsed) && parsed > 0 ? parsed : 10;
+            dashboardFilterState.page = 1;
+            renderDashboard();
+        });
+
+        document.getElementById('seller-prev-page-btn')?.addEventListener('click', () => {
+            dashboardFilterState.page = Math.max(1, dashboardFilterState.page - 1);
+            renderDashboard();
+        });
+
+        document.getElementById('seller-next-page-btn')?.addEventListener('click', () => {
+            dashboardFilterState.page += 1;
+            renderDashboard();
+        });
 
         document.getElementById('seller-image-input')?.addEventListener('change', async (event) => {
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                setImagePreview('');
+                return;
+            }
+            if (!String(file.type || '').startsWith('image/')) {
+                setImagePreview('');
+                if (typeof showToast === 'function') showToast('Please select a valid image file.', 'error');
+                event.target.value = '';
+                return;
+            }
             try {
                 const dataUrl = await readImageAsDataURL(file);
-                const preview = document.getElementById('seller-image-preview');
-                if (preview) {
-                    preview.src = dataUrl;
-                    preview.classList.remove('hidden');
-                }
+                setImagePreview(dataUrl);
             } catch (_error) {
                 if (typeof showToast === 'function') showToast('Could not preview that image.', 'error');
+                setImagePreview('');
             }
         });
     }

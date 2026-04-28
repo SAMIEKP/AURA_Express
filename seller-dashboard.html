@@ -28,7 +28,11 @@
             <a href="index.html" class="text-2xl md:text-3xl font-bold text-[#FF6A00] tracking-tight">Union Market</a>
             <div class="flex items-center gap-2 md:gap-4">
                 <a href="products.html" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[#FF6A00] transition-colors">Shop</a>
-                <a href="profile.html" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[#FF6A00] transition-colors">Profile</a>
+                <a id="seller-login-btn" href="signin.html" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[#FF6A00] transition-colors">Login</a>
+                <a id="seller-profile-btn" href="profile.html" class="hidden items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors">
+                    <span class="w-7 h-7 rounded-full bg-[#FF6A00] text-white text-xs font-bold flex items-center justify-center" id="seller-profile-avatar">U</span>
+                    <span id="seller-profile-name">Profile</span>
+                </a>
             </div>
         </div>
     </header>
@@ -144,13 +148,90 @@
                     <h2 class="text-2xl font-black text-gray-900 dark:text-white">Your Listings</h2>
                     <a href="products.html" class="text-sm font-bold text-[#FF6A00] hover:underline">View storefront</a>
                 </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
+                    <input id="seller-listing-search" type="text" placeholder="Search listings by name or SKU..." class="md:col-span-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                    <select id="seller-status-filter" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                        <option value="all">All listings</option>
+                        <option value="active">Active only</option>
+                        <option value="paused">Paused only</option>
+                        <option value="low-stock">Low stock only</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <button id="seller-clear-filters-btn" class="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors">Clear</button>
+                        <button id="seller-export-btn" class="flex-1 px-3 py-2.5 rounded-xl bg-gray-900 dark:bg-white dark:text-gray-900 text-white text-xs font-bold hover:opacity-90 transition-opacity">Export</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
+                    <select id="seller-sort-by" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                        <option value="latest">Sort: Newest first</option>
+                        <option value="oldest">Sort: Oldest first</option>
+                        <option value="price-desc">Price: High to low</option>
+                        <option value="price-asc">Price: Low to high</option>
+                        <option value="inventory-desc">Inventory: High to low</option>
+                        <option value="inventory-asc">Inventory: Low to high</option>
+                        <option value="name-asc">Name: A to Z</option>
+                        <option value="name-desc">Name: Z to A</option>
+                    </select>
+                    <select id="seller-page-size" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                        <option value="6">6 per page</option>
+                        <option value="10" selected>10 per page</option>
+                        <option value="20">20 per page</option>
+                        <option value="50">50 per page</option>
+                    </select>
+                    <button id="seller-export-csv-btn" class="px-3 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors">Export CSV</button>
+                    <p id="seller-pagination-summary" class="self-center text-xs text-gray-500 dark:text-gray-400 text-right">Page 1 of 1</p>
+                </div>
+                <p id="seller-filter-summary" class="text-xs text-gray-500 dark:text-gray-400 mb-4">Showing 0 listings</p>
                 <div id="seller-empty-state" class="hidden rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center text-gray-500">
                     No listings yet. Add your first product above.
                 </div>
                 <div id="seller-products-list" class="space-y-4"></div>
+                <div id="seller-pagination-controls" class="mt-5 flex items-center justify-between gap-3">
+                    <button id="seller-prev-page-btn" class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors">Previous</button>
+                    <span id="seller-page-indicator" class="text-xs text-gray-500 dark:text-gray-400">Page 1</span>
+                    <button id="seller-next-page-btn" class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors">Next</button>
+                </div>
             </section>
         </div>
     </main>
+
+    <footer class="bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-300 dark:text-gray-400 border-t border-gray-800/50 mt-16">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>About Union Market</h3>
+                <p class="text-sm text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">Your trusted global marketplace for premium quality products at unbeatable prices. Connecting buyers and sellers worldwide.</p>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Quick Links</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="index.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2">Home</a></li>
+                    <li><a href="products.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2">Shop All</a></li>
+                    <li><a href="profile.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2">My Profile</a></li>
+                    <li><a href="help.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2">Help Center</a></li>
+                </ul>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Seller Tools</h3>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li>Upload & manage products</li>
+                    <li>Inventory monitoring</li>
+                    <li>Low stock alerts</li>
+                    <li>Listing export</li>
+                </ul>
+            </div>
+            <div class="group">
+                <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Follow Us</h3>
+                <div class="flex gap-4 items-start pt-1">
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110" title="Facebook">f</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110" title="Twitter">𝕏</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-[#FF6A00] text-gray-400 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110" title="Instagram">📷</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800/50 px-8 py-8 text-center text-sm">
+            © 2026 Union Market. All rights reserved. | Privacy Policy | Terms of Service
+        </div>
+    </footer>
 
     <script src="script.js"></script>
     <script src="seller-marketplace.js"></script>
