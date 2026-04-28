@@ -30,6 +30,27 @@ function formatPrice(amount) {
     return mwkFormatter.format(toMwk(amount));
 }
 
+function getOptimizedImageURL(imageURL, width = 500, quality = 70) {
+    if (!imageURL || typeof imageURL !== 'string') return imageURL;
+    // Only transform network images. Keep local/base64 uploads unchanged.
+    if (!imageURL.startsWith('http')) return imageURL;
+
+    try {
+        const url = new URL(imageURL);
+        // Unsplash supports server-side resizing and compression parameters.
+        if (url.hostname.includes('images.unsplash.com')) {
+            url.searchParams.set('auto', 'format');
+            url.searchParams.set('fit', 'crop');
+            url.searchParams.set('w', String(width));
+            url.searchParams.set('q', String(quality));
+            return url.toString();
+        }
+        return imageURL;
+    } catch (_error) {
+        return imageURL;
+    }
+}
+
 // ============ UTILITY FUNCTIONS ============
 function debounce(func, wait) {
     let timeout;
@@ -866,7 +887,7 @@ function renderWishlist() {
 
     wishlistGrid.innerHTML = items.map(item => `
         <div onclick="viewProduct(${item.id})" class="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden cursor-pointer border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all">
-            <img src="${item.image}" alt="${item.name}" class="w-full h-40 object-cover">
+            <img src="${getOptimizedImageURL(item.image, 480, 70)}" alt="${item.name}" loading="lazy" decoding="async" fetchpriority="low" class="w-full h-40 object-cover">
             <div class="p-4">
                 <h3 class="font-bold text-sm line-clamp-2 text-gray-900 dark:text-white">${item.name}</h3>
                 <p class="text-[#FF6A00] font-bold">${formatPrice(item.price)}</p>
@@ -892,10 +913,11 @@ function createProductCard(product) {
     
     const displayName = searchWords.length > 0 ? highlightMatch(product.name, searchWords) : product.name;
 
+    const cardImageURL = getOptimizedImageURL(product.image, 420, 70);
     return `
         <div onclick="viewProduct(${product.id})" class="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 group border border-gray-100 dark:border-gray-800 cursor-pointer relative">
             <div class="aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
-                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                <img src="${cardImageURL}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                 ${product.discount ? `<span class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">-${product.discount}%</span>` : ''}
                 ${product.tag ? `<span class="absolute top-2 left-2 bg-[#FF6A00] text-white px-2 py-1 rounded-full text-xs font-bold">${tagEmoji}</span>` : ''}
                 <span class="absolute bottom-12 left-2 bg-white/95 ${stockColor} px-2 py-1 rounded text-xs font-semibold">${stockStatus}</span>
@@ -1428,10 +1450,11 @@ function openQuickView(event, productId) {
     const product = products.find(p => p.id === productId);
     if (!modal || !content || !product) return;
 
+    const quickViewImageURL = getOptimizedImageURL(product.image, 720, 75);
     content.innerHTML = `
         <div class="grid md:grid-cols-2 gap-6">
             <div class="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
-                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover min-h-[280px]">
+                <img src="${quickViewImageURL}" alt="${product.name}" loading="eager" decoding="async" fetchpriority="high" class="w-full h-full object-cover min-h-[280px]">
             </div>
             <div>
                 <div class="flex items-center justify-between gap-3 mb-2">
@@ -2291,7 +2314,7 @@ function renderSubscriptionProgram() {
 
 function showLivePurchaseNotification(productName, buyerName = 'Someone') {
     const notification = document.createElement('div');
-    notification.className = 'fixed bottom-8 left-8 bg-white dark:bg-gray-900 rounded-lg shadow-2xl p-4 z-[999] max-w-xs animate-slide-in border border-gray-200 dark:border-gray-800';
+    notification.className = 'fixed top-6 right-6 bg-white dark:bg-gray-900 rounded-lg shadow-2xl p-4 z-[999] max-w-xs animate-slide-in border border-gray-200 dark:border-gray-800';
     notification.innerHTML = `
         <div class="flex items-start gap-3">
             <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12m-1.4 1.4L9 19 21 7"/></svg>

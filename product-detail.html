@@ -185,7 +185,9 @@
             detailProduct = product;
             document.getElementById('product-name').textContent = product.name;
             document.getElementById('product-price').textContent = formatPriceMWK(product.price);
-            document.getElementById('product-image').src = product.image;
+            document.getElementById('product-image').src = (typeof getOptimizedImageURL === 'function')
+                ? getOptimizedImageURL(product.image, 900, 78)
+                : product.image;
             document.getElementById('product-supplier').textContent = product.supplier;
 
             syncProductDetailCartCount();

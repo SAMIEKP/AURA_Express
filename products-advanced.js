@@ -175,7 +175,9 @@ function openQuickView(productId) {
     const modal = document.getElementById('quick-view-modal');
     if (!modal) return;
     
-    modal.querySelector('.modal-image').src = product.image;
+    modal.querySelector('.modal-image').src = typeof getOptimizedImageURL === 'function'
+        ? getOptimizedImageURL(product.image, 720, 75)
+        : product.image;
     modal.querySelector('.modal-name').textContent = product.name;
     modal.querySelector('.modal-rating').textContent = product.rating.toFixed(1);
     modal.querySelector('.modal-reviews').textContent = `(${product.reviews || 0} reviews)`;
@@ -319,7 +321,7 @@ function updateRecentlyViewedWidget() {
     
     widget.innerHTML = viewedProducts.slice(0, 3).map(product => `
         <div class="border dark:border-gray-800 rounded-lg p-2 hover:shadow-md transition-all cursor-pointer mb-3 bg-white dark:bg-gray-900 group" onclick="viewProduct(${product.id})">
-            <img src="${product.image}" alt="${product.name}" class="w-full h-16 object-cover rounded group-hover:opacity-80 transition-opacity">
+            <img src="${typeof getOptimizedImageURL === 'function' ? getOptimizedImageURL(product.image, 220, 70) : product.image}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" class="w-full h-16 object-cover rounded group-hover:opacity-80 transition-opacity">
             <p class="text-[10px] mt-1 truncate font-medium text-gray-900 dark:text-white group-hover:text-[#FF6A00]">${product.name}</p>
             <p class="text-[10px] text-[#FF6A00] font-bold">${typeof formatPrice === 'function' ? formatPrice(product.price) : `MWK ${Math.round(product.price * 1750).toLocaleString('en-MW')}`}</p>
         </div>
