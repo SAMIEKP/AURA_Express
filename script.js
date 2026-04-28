@@ -415,7 +415,7 @@ function createOrSignInWithSocial(provider, mode = 'signin') {
     const actionText = mode === 'signup' ? 'account created' : 'signed in';
     showToast(`${label} ${actionText} successfully!`, 'success');
     setTimeout(() => {
-        window.location.href = 'home.html';
+        window.location.href = 'index.html';
     }, 1200);
 }
 
@@ -811,7 +811,7 @@ function showReceipt(transaction) {
                     <button onclick="window.location.href='profile.html'" class="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-3 rounded-xl hover:opacity-90 transition-all">
                         View Order History
                     </button>
-                    <button onclick="window.location.href='home.html'" class="w-full text-[#FF6A00] font-bold py-2">
+                    <button onclick="window.location.href='index.html'" class="w-full text-[#FF6A00] font-bold py-2">
                         Back to Home
                     </button>
                 </div>
@@ -2384,7 +2384,7 @@ function initBreadcrumbs() {
     if (breadcrumb) {
         breadcrumb.innerHTML = `
             <nav class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <a href="home.html" class="hover:text-[#FF6A00] transition-colors">Home</a>
+                <a href="index.html" class="hover:text-[#FF6A00] transition-colors">Home</a>
                 <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 <span class="text-gray-900 dark:text-white font-medium">Shop</span>
             </nav>
@@ -2401,7 +2401,9 @@ function toggleChat() {
 }
 
 function sendChatMessage(message) {
-    alert(`Thank you for your message: "${message}". Our support team will respond shortly! 👋`);
+    if (typeof showToast === 'function') {
+        showToast(`Thank you for your message: "${message}". Our support team will respond shortly! 👋`, 'success');
+    }
     toggleChat();
 }
 
@@ -2479,6 +2481,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (pageTitle.includes('Products')) {
+        // products.html has its own controller (products-advanced.js). Avoid double-binding/render races.
+        if (window.__advancedProductsActive) return;
+
         const urlParams = new URLSearchParams(window.location.search);
         const categoryParam = urlParams.get('category');
         const searchParam = urlParams.get('search');

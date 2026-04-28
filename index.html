@@ -185,7 +185,7 @@
                 </div>
                 <div class="flex items-center space-x-6">
                     <a href="help.html" class="hover:text-[#FF6A00] transition-colors">Help Center</a>
-                    <a href="#" class="hover:text-[#FF6A00] transition-colors" onclick="alert('App download available on iOS and Android!'); return false;">Get the App</a>
+                    <a href="#" class="hover:text-[#FF6A00] transition-colors" onclick="if (typeof showToast === 'function') showToast('App download available on iOS and Android!'); return false;">Get the App</a>
                 </div>
             </div>
         </div>
@@ -197,7 +197,7 @@
                        class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-transparent rounded-lg dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
             </div>
             <ul class="flex flex-col space-y-4 text-gray-700 dark:text-gray-300 font-medium text-lg">
-                <li><a href="home.html" class="hover:text-[#FF6A00]">Home</a></li>
+                <li><a href="index.html" class="hover:text-[#FF6A00]">Home</a></li>
                 <li><a href="products.html" class="hover:text-[#FF6A00]">Shop</a></li>
                 <li><a href="products.html" class="hover:text-[#FF6A00]">Categories</a></li>
                 <li><a href="cart.html" class="hover:text-[#FF6A00]">Cart</a></li>
@@ -211,7 +211,7 @@
     <!-- Mobile Bottom Navigation -->
     <div class="mobile-bottom-nav fixed bottom-0 left-0 right-0 md:hidden bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 z-40 shadow-2xl">
         <div class="flex items-center justify-around py-3">
-            <a href="home.html" class="flex flex-col items-center text-[#FF6A00] transition-colors">
+            <a href="index.html" class="flex flex-col items-center text-[#FF6A00] transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                 <span class="text-xs mt-1">Home</span>
             </a>
@@ -796,7 +796,7 @@
             <div class="group">
                 <h3 class="text-white font-bold mb-6 text-lg flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-[#FF6A00] to-orange-500 rounded"></span>Quick Links</h3>
                 <ul class="space-y-3 text-sm">
-                    <li><a href="home.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Home</a></li>
+                    <li><a href="index.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Home</a></li>
                     <li><a href="products.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Shop All</a></li>
                     <li><a href="seller-dashboard.html" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> Sell on Union Market</a></li>
                     <li><a href="#" class="text-gray-400 hover:text-[#FF6A00] transition-colors inline-flex items-center gap-2"><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span> About Us</a></li>

@@ -44,7 +44,7 @@
 
     <div class="mobile-bottom-nav fixed bottom-0 left-0 right-0 md:hidden bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 z-40 shadow-2xl">
         <div class="flex items-center justify-around py-3">
-            <a href="home.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Home</span></a>
+            <a href="index.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Home</span></a>
             <a href="products.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Shop</span></a>
             <a href="cart.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors relative"><span class="absolute -top-1 -right-1 bg-[#FF6A00] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center" id="cart-count-mobile">0</span><span class="text-xs mt-1">Cart</span></a>
             <a href="wishlist.html" class="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-[#FF6A00] transition-colors"><span class="text-xs mt-1">Wishlist</span></a>
@@ -624,7 +624,9 @@
             });
 
             document.getElementById('new-message-btn').addEventListener('click', () => {
-                alert('New message composer can be connected to supplier directory next.');
+                if (typeof showToast === 'function') {
+                    showToast('New message composer can be connected to supplier directory next.');
+                }
             });
 
             window.addEventListener('resize', handleMobileLayout);

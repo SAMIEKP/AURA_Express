@@ -507,7 +507,7 @@
             }
             
             if (!terms) {
-                alert('Please accept the Terms & Conditions');
+                if (typeof showToast === 'function') showToast('Please accept the Terms & Conditions', 'error');
                 isValid = false;
             }
             

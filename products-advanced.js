@@ -1,5 +1,8 @@
 // Advanced Products Page Features
 
+// Signal that products.html is managed by the advanced controller.
+window.__advancedProductsActive = true;
+
 // Initialize allProducts from the global products array
 let allProducts = typeof products !== 'undefined' ? products : [];
 
@@ -181,7 +184,9 @@ function openQuickView(productId) {
     modal.querySelector('.modal-name').textContent = product.name;
     modal.querySelector('.modal-rating').textContent = product.rating.toFixed(1);
     modal.querySelector('.modal-reviews').textContent = `(${product.reviews || 0} reviews)`;
-    modal.querySelector('.modal-price').textContent = `${product.price}$`;
+    modal.querySelector('.modal-price').textContent = typeof formatPrice === 'function'
+        ? formatPrice(product.price)
+        : `${product.price}`;
     modal.querySelector('.modal-description').textContent = product.description || 'No description available';
     
     modal.classList.remove('hidden');
@@ -213,7 +218,9 @@ function addToCartQuick(productId) {
     updateCartCount();
     
     // Show notification
-    alert(`${product.name} added to cart!`);
+    if (typeof showToast === 'function') {
+        showToast(`${product.name} added to cart!`, 'success');
+    }
 }
 
 function addToWishlistQuick(productId) {
@@ -226,9 +233,13 @@ function addToWishlistQuick(productId) {
     if (!exists) {
         wishlist.push(product);
         localStorage.setItem('wishlist', JSON.stringify(wishlist));
-        alert(`${product.name} added to wishlist!`);
+        if (typeof showToast === 'function') {
+            showToast(`${product.name} added to wishlist!`, 'success');
+        }
     } else {
-        alert(`${product.name} is already in your wishlist!`);
+        if (typeof showToast === 'function') {
+            showToast(`${product.name} is already in your wishlist!`);
+        }
     }
 }
 
