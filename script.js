@@ -224,9 +224,17 @@ const products = [
 ];
 
 // ============ 2. DARK MODE FUNCTIONALITY ============
-function toggleDarkMode() {
+function applyThemeState(isDarkMode) {
     const htmlElement = document.documentElement;
-    const isDarkMode = htmlElement.classList.toggle('dark');
+    const bodyElement = document.body;
+    htmlElement.classList.toggle('dark', Boolean(isDarkMode));
+    if (bodyElement) bodyElement.classList.toggle('dark-mode', Boolean(isDarkMode));
+    htmlElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+}
+
+function toggleDarkMode() {
+    const isDarkMode = !document.documentElement.classList.contains('dark');
+    applyThemeState(isDarkMode);
     localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
     updateDarkModeIcon();
     showThemeToast(isDarkMode ? 'Dark Mode' : 'Light Mode');
@@ -249,9 +257,11 @@ function showThemeToast(message) {
 }
 
 function initializeDarkMode() {
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.documentElement.classList.add('dark');
-    }
+    const storedTheme = localStorage.getItem('darkMode');
+    const hasStoredPreference = storedTheme === 'true' || storedTheme === 'false';
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const shouldUseDark = hasStoredPreference ? storedTheme === 'true' : prefersDark;
+    applyThemeState(shouldUseDark);
     updateDarkModeIcon();
 }
 
