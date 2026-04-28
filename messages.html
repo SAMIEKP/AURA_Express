@@ -135,6 +135,36 @@
         </div>
     </main>
 
+    <div id="new-message-modal" class="hidden fixed inset-0 z-[1000]">
+        <div id="new-message-backdrop" class="absolute inset-0 bg-black/50"></div>
+        <div class="relative min-h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-gray-900">Start New Conversation</h2>
+                    <button id="new-message-close-btn" class="text-gray-500 hover:text-gray-800 text-xl leading-none" aria-label="Close">×</button>
+                </div>
+                <form id="new-message-form" class="p-5 space-y-4">
+                    <div>
+                        <label for="new-supplier-name" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Supplier Name</label>
+                        <input id="new-supplier-name" name="supplierName" required class="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="e.g. Lilongwe Traders Ltd.">
+                    </div>
+                    <div>
+                        <label for="new-order-ref" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Order Reference</label>
+                        <input id="new-order-ref" name="orderRef" class="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="e.g. AUR-22010">
+                    </div>
+                    <div>
+                        <label for="new-message-text" class="text-xs font-semibold uppercase tracking-wide text-gray-500">First Message</label>
+                        <textarea id="new-message-text" name="messageText" rows="3" required class="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6A00]" placeholder="Write your opening message..."></textarea>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-1">
+                        <button type="button" id="new-message-cancel-btn" class="px-4 py-2 text-sm font-semibold border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-sm font-bold bg-[#FF6A00] text-white rounded-lg hover:bg-[#e65f00]">Create Conversation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-300 dark:text-gray-400 border-t border-gray-800/50">
         <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -236,19 +266,54 @@
 
         const messageState = {
             conversations: JSON.parse(localStorage.getItem('aura_messages_data') || 'null') || initialConversations,
-            selectedId: null,
+            selectedId: Number(localStorage.getItem('aura_messages_selected_id')) || null,
             filter: 'all',
             query: '',
             attachedFileName: '',
-            isMobileThreadOpen: false
+            isMobileThreadOpen: localStorage.getItem('aura_messages_mobile_thread_open') === 'true'
         };
 
         function saveMessageState() {
             localStorage.setItem('aura_messages_data', JSON.stringify(messageState.conversations));
+            localStorage.setItem('aura_messages_selected_id', messageState.selectedId ? String(messageState.selectedId) : '');
+            localStorage.setItem('aura_messages_mobile_thread_open', String(Boolean(messageState.isMobileThreadOpen)));
         }
 
         function getConversationById(convId) {
             return messageState.conversations.find(conv => conv.id === convId) || null;
+        }
+
+        function getConversationLatestTimestamp(conv) {
+            const last = getLastMessage(conv);
+            const fallback = Number(conv.id) || 0;
+            return last && last.timestamp ? Number(last.timestamp) : fallback;
+        }
+
+        function sortConversationsByLatest() {
+            messageState.conversations.sort((a, b) => getConversationLatestTimestamp(b) - getConversationLatestTimestamp(a));
+        }
+
+        function getTodayLabel() {
+            return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function buildTimestampMessage(text, from = 'me') {
+            const now = Date.now();
+            return {
+                id: now + Math.floor(Math.random() * 1000),
+                timestamp: now,
+                from,
+                text,
+                time: new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                date: getTodayLabel()
+            };
+        }
+
+        function getSupplierAvatar(name) {
+            const cleaned = String(name || '').trim();
+            if (!cleaned) return 'SP';
+            const parts = cleaned.split(/\s+/).slice(0, 2);
+            return parts.map(part => part.charAt(0).toUpperCase()).join('');
         }
 
         function getLastMessage(conv) {
@@ -459,6 +524,7 @@
 
         function closeMobileThread() {
             messageState.isMobileThreadOpen = false;
+            localStorage.setItem('aura_messages_mobile_thread_open', 'false');
             document.getElementById('thread-panel').classList.add('hidden');
             document.getElementById('conversation-panel').classList.remove('hidden');
         }
@@ -498,6 +564,7 @@
             openMobileThreadIfNeeded();
             renderConversationsList();
             renderOverviewCards();
+            saveMessageState();
         }
 
         function toggleStar(convId) {
@@ -526,15 +593,8 @@
         function clearCurrentThread() {
             const conv = getConversationById(messageState.selectedId);
             if (!conv) return;
-            conv.messages = [
-                {
-                    id: Date.now(),
-                    from: 'supplier',
-                    text: 'Chat history was cleared. You can continue here anytime.',
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    date: 'Today'
-                }
-            ];
+            conv.messages = [buildTimestampMessage('Chat history was cleared. You can continue here anytime.', 'supplier')];
+            sortConversationsByLatest();
             saveMessageState();
             renderThreadMessages(conv);
             renderConversationsList();
@@ -544,18 +604,59 @@
             const conv = getConversationById(messageState.selectedId);
             if (!conv) return;
 
-            conv.messages.push({
-                id: Date.now(),
-                from,
-                text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                date: 'Today'
-            });
+            conv.messages.push(buildTimestampMessage(text, from));
 
+            sortConversationsByLatest();
             saveMessageState();
             renderThreadMessages(conv);
             renderConversationsList();
             renderOverviewCards();
+        }
+
+        function openNewMessageModal() {
+            const modal = document.getElementById('new-message-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            document.getElementById('new-supplier-name')?.focus();
+        }
+
+        function closeNewMessageModal() {
+            const modal = document.getElementById('new-message-modal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.getElementById('new-message-form')?.reset();
+        }
+
+        function createConversationFromForm(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const supplierName = form.elements.supplierName.value.trim();
+            const orderRefInput = form.elements.orderRef.value.trim();
+            const messageText = form.elements.messageText.value.trim();
+            if (!supplierName || !messageText) return;
+
+            const now = Date.now();
+            const newConversation = {
+                id: now,
+                supplier: supplierName,
+                avatar: getSupplierAvatar(supplierName),
+                orderRef: orderRefInput || `AUR-${String(now).slice(-5)}`,
+                online: false,
+                starred: false,
+                messages: [buildTimestampMessage(messageText, 'me')],
+                lastReadMessageId: null
+            };
+
+            messageState.conversations.unshift(newConversation);
+            sortConversationsByLatest();
+            saveMessageState();
+            closeNewMessageModal();
+            renderOverviewCards();
+            renderConversationsList();
+            selectConversation(newConversation.id);
+            if (typeof showToast === 'function') showToast('Conversation created.');
         }
 
         function simulateAutoReply() {
@@ -637,15 +738,21 @@
             });
 
             document.getElementById('new-message-btn').addEventListener('click', () => {
-                if (typeof showToast === 'function') {
-                    showToast('New message composer can be connected to supplier directory next.');
-                }
+                openNewMessageModal();
+            });
+            document.getElementById('new-message-close-btn')?.addEventListener('click', closeNewMessageModal);
+            document.getElementById('new-message-cancel-btn')?.addEventListener('click', closeNewMessageModal);
+            document.getElementById('new-message-backdrop')?.addEventListener('click', closeNewMessageModal);
+            document.getElementById('new-message-form')?.addEventListener('submit', createConversationFromForm);
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeNewMessageModal();
             });
 
             window.addEventListener('resize', handleMobileLayout);
         }
 
         function initMessagesPage() {
+            sortConversationsByLatest();
             renderOverviewCards();
             renderConversationsList();
             renderThreadHeader(null);
@@ -654,6 +761,10 @@
             updateComposerState();
             setupEventHandlers();
             handleMobileLayout();
+
+            if (messageState.selectedId && getConversationById(messageState.selectedId)) {
+                selectConversation(messageState.selectedId);
+            }
         }
 
         initMessagesPage();
