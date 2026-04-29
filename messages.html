@@ -86,6 +86,9 @@
                     <div id="thread-header" class="border-b border-gray-100 p-4">
                         <div class="text-center text-gray-500 text-sm">Select a conversation to start messaging</div>
                     </div>
+                    <div class="px-4 py-2 border-b border-gray-100">
+                        <input id="thread-search" type="text" placeholder="Search in this conversation..." aria-label="Search in conversation" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6A00]">
+                    </div>
 
                     <div id="typing-indicator" class="hidden px-6 py-2 text-xs text-gray-500 border-b border-gray-100">
                         Supplier is typing...
@@ -270,7 +273,8 @@
             filter: 'all',
             query: '',
             attachedFileName: '',
-            isMobileThreadOpen: localStorage.getItem('aura_messages_mobile_thread_open') === 'true'
+            isMobileThreadOpen: localStorage.getItem('aura_messages_mobile_thread_open') === 'true',
+            threadQuery: ''
         };
 
         function saveMessageState() {
@@ -316,6 +320,10 @@
             return parts.map(part => part.charAt(0).toUpperCase()).join('');
         }
 
+        function sanitizeText(value) {
+            return String(value || '').replace(/[<>"'`]/g, '').trim();
+        }
+
         function getLastMessage(conv) {
             return conv.messages[conv.messages.length - 1] || null;
         }
@@ -327,6 +335,7 @@
 
         function getFilteredConversations() {
             return messageState.conversations.filter(conv => {
+                if (conv.archived) return false;
                 if (messageState.filter === 'unread' && !isConversationUnread(conv)) return false;
                 if (messageState.filter === 'starred' && !conv.starred) return false;
                 if (!messageState.query) return true;
@@ -373,7 +382,13 @@
                 return;
             }
 
-            list.innerHTML = filteredConversations.map(conv => {
+            const sortedForList = [...filteredConversations].sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return 0;
+            });
+
+            list.innerHTML = sortedForList.map(conv => {
                 const last = getLastMessage(conv);
                 const isActive = conv.id === messageState.selectedId;
                 const unread = isConversationUnread(conv);
@@ -386,6 +401,7 @@
                                     <h3 class="font-semibold text-gray-900 truncate">${conv.supplier}</h3>
                                     <div class="flex items-center gap-2 flex-shrink-0">
                                         <button class="star-conversation-btn text-sm ${conv.starred ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'}" data-star-id="${conv.id}" aria-label="Toggle star">★</button>
+                                        ${conv.pinned ? '<span class="text-[10px] px-1.5 py-0.5 bg-orange-100 text-[#FF6A00] rounded">PINNED</span>' : ''}
                                         <span class="text-xs text-gray-500">${last ? last.time : ''}</span>
                                     </div>
                                 </div>
@@ -433,6 +449,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
+                        <button id="pin-chat-btn" class="text-xs px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">${conv.pinned ? 'Unpin' : 'Pin'}</button>
+                        <button id="archive-chat-btn" class="text-xs px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Archive</button>
                         <button id="mark-read-btn" class="text-xs px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Mark as read</button>
                         <button id="clear-chat-btn" class="text-xs px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Clear chat</button>
                     </div>
@@ -441,6 +459,8 @@
 
             const backBtn = document.getElementById('thread-back-btn');
             if (backBtn) backBtn.addEventListener('click', closeMobileThread);
+            document.getElementById('pin-chat-btn')?.addEventListener('click', togglePinCurrentThread);
+            document.getElementById('archive-chat-btn')?.addEventListener('click', archiveCurrentThread);
             document.getElementById('mark-read-btn')?.addEventListener('click', markConversationAsRead);
             document.getElementById('clear-chat-btn')?.addEventListener('click', clearCurrentThread);
         }
@@ -460,9 +480,13 @@
             }
 
             let lastDate = '';
+            const threadQuery = (messageState.threadQuery || '').toLowerCase().trim();
+            const filteredMessages = !threadQuery
+                ? conv.messages
+                : conv.messages.filter(msg => String(msg.text || '').toLowerCase().includes(threadQuery));
             thread.innerHTML = `
                 <div class="flex flex-col gap-4">
-                    ${conv.messages.map(msg => {
+                    ${filteredMessages.map(msg => {
                         const dateDivider = msg.date !== lastDate ? `
                             <div class="text-center">
                                 <span class="inline-block bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">${msg.date}</span>
@@ -474,7 +498,9 @@
                             <div class="flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}">
                                 <div class="${msg.from === 'me' ? 'bg-[#FF6A00] text-white' : 'bg-white border border-gray-200 text-gray-800'} rounded-2xl p-4 max-w-[80%] shadow-sm">
                                     <p class="text-sm leading-relaxed">${msg.text}</p>
-                                    <span class="text-[11px] ${msg.from === 'me' ? 'text-orange-100' : 'text-gray-500'} mt-2 block ${msg.from === 'me' ? 'text-right' : ''}">${msg.time}</span>
+                                    <span class="text-[11px] ${msg.from === 'me' ? 'text-orange-100' : 'text-gray-500'} mt-2 block ${msg.from === 'me' ? 'text-right' : ''}">
+                                        ${msg.time}${msg.from === 'me' ? ` • ${msg.status || 'sent'}` : ''}
+                                    </span>
                                 </div>
                             </div>
                         `;
@@ -583,6 +609,12 @@
             const last = getLastMessage(conv);
             if (last && last.from === 'supplier') {
                 conv.lastReadMessageId = last.id;
+                conv.messages = conv.messages.map((message) => {
+                    if (message.from === 'me' && message.status === 'delivered') {
+                        return { ...message, status: 'read' };
+                    }
+                    return message;
+                });
                 saveMessageState();
                 renderThreadMessages(conv);
                 renderConversationsList();
@@ -604,7 +636,9 @@
             const conv = getConversationById(messageState.selectedId);
             if (!conv) return;
 
-            conv.messages.push(buildTimestampMessage(text, from));
+            const message = buildTimestampMessage(text, from);
+            if (from === 'me') message.status = 'sent';
+            conv.messages.push(message);
 
             sortConversationsByLatest();
             saveMessageState();
@@ -632,9 +666,9 @@
         function createConversationFromForm(event) {
             event.preventDefault();
             const form = event.currentTarget;
-            const supplierName = form.elements.supplierName.value.trim();
-            const orderRefInput = form.elements.orderRef.value.trim();
-            const messageText = form.elements.messageText.value.trim();
+            const supplierName = sanitizeText(form.elements.supplierName.value);
+            const orderRefInput = sanitizeText(form.elements.orderRef.value);
+            const messageText = sanitizeText(form.elements.messageText.value);
             if (!supplierName || !messageText) return;
 
             const now = Date.now();
@@ -663,15 +697,50 @@
             const indicator = document.getElementById('typing-indicator');
             indicator.classList.remove('hidden');
 
+            const conv = getConversationById(messageState.selectedId);
+            if (conv) {
+                conv.messages = conv.messages.map((message) => {
+                    if (message.from === 'me' && message.status === 'sent') return { ...message, status: 'delivered' };
+                    return message;
+                });
+                saveMessageState();
+                renderThreadMessages(conv);
+            }
+
             setTimeout(() => {
                 indicator.classList.add('hidden');
                 appendMessageToCurrentConversation('Thanks for the message. Our team is checking and will confirm shortly.', 'supplier');
+                markConversationAsRead();
             }, 1600);
+        }
+
+        function togglePinCurrentThread() {
+            const conv = getConversationById(messageState.selectedId);
+            if (!conv) return;
+            conv.pinned = !conv.pinned;
+            saveMessageState();
+            renderThreadHeader(conv);
+            renderConversationsList();
+            renderOverviewCards();
+        }
+
+        function archiveCurrentThread() {
+            const conv = getConversationById(messageState.selectedId);
+            if (!conv) return;
+            conv.archived = true;
+            saveMessageState();
+            messageState.selectedId = null;
+            renderThreadHeader(null);
+            renderThreadMessages(null);
+            renderQuickReplies();
+            updateComposerState();
+            renderConversationsList();
+            renderOverviewCards();
         }
 
         function sendCurrentMessage() {
             const input = document.getElementById('message-input');
-            const text = input.value.trim();
+            const text = sanitizeText(input.value);
             if (!text || !messageState.selectedId) return;
 
             appendMessageToCurrentConversation(text, 'me');
@@ -692,7 +761,10 @@
         function setupEventHandlers() {
             document.getElementById('send-message-btn').addEventListener('click', sendCurrentMessage);
             document.getElementById('message-input').addEventListener('keydown', event => {
-                if (event.key === 'Enter') sendCurrentMessage();
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendCurrentMessage();
+                }
             });
 
             document.getElementById('conversation-search').addEventListener('input', event => {
@@ -744,6 +816,11 @@
             document.getElementById('new-message-cancel-btn')?.addEventListener('click', closeNewMessageModal);
             document.getElementById('new-message-backdrop')?.addEventListener('click', closeNewMessageModal);
             document.getElementById('new-message-form')?.addEventListener('submit', createConversationFromForm);
+            document.getElementById('thread-search')?.addEventListener('input', (event) => {
+                messageState.threadQuery = event.target.value || '';
+                const current = getConversationById(messageState.selectedId);
+                renderThreadMessages(current);
+            });
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') closeNewMessageModal();
             });

@@ -44,6 +44,21 @@ let currentFilters = {
     viewPerPage: 40,
     view: 'grid'
 };
+const PRODUCTS_FILTERS_KEY = 'aura_products_filters_v1';
+
+function saveFiltersState() {
+    localStorage.setItem(PRODUCTS_FILTERS_KEY, JSON.stringify(currentFilters));
+}
+
+function loadFiltersState() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(PRODUCTS_FILTERS_KEY) || 'null');
+        if (!stored || typeof stored !== 'object') return;
+        currentFilters = { ...currentFilters, ...stored };
+    } catch (_error) {
+        // no-op
+    }
+}
 
 // ===========================
 // SEARCH & FILTER HANDLERS
@@ -145,6 +160,7 @@ function applyAllFilters() {
     filtered = sortProducts(filtered, currentFilters.sort);
     
     renderProductsGallery(filtered);
+    saveFiltersState();
 }
 
 function sortProducts(products, sortType) {
@@ -221,6 +237,9 @@ function addToCartQuick(productId) {
     if (typeof showToast === 'function') {
         showToast(`${product.name} added to cart!`, 'success');
     }
+    if (typeof trackEvent === 'function') {
+        trackEvent('add_to_cart', { productId, source: 'products-advanced', category: product.category });
+    }
 }
 
 function addToWishlistQuick(productId) {
@@ -235,6 +254,9 @@ function addToWishlistQuick(productId) {
         localStorage.setItem('wishlist', JSON.stringify(wishlist));
         if (typeof showToast === 'function') {
             showToast(`${product.name} added to wishlist!`, 'success');
+        }
+        if (typeof trackEvent === 'function') {
+            trackEvent('add_to_wishlist', { productId, source: 'products-advanced' });
         }
     } else {
         if (typeof showToast === 'function') {
@@ -399,6 +421,7 @@ function renderProductsGallery(products) {
 // ===========================
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadFiltersState();
     // Ensure allProducts is initialized and normalized
     if (typeof products !== 'undefined' && allProducts.length === 0) {
         allProducts = products;
@@ -416,6 +439,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceDisplay = document.getElementById('price-display');
     const priceMinDisplay = document.getElementById('price-min-display');
     
+    if (priceSlider) {
+        priceSlider.value = String(currentFilters.priceMax);
+    }
+    if (priceMinInput) {
+        priceMinInput.value = String(currentFilters.priceMin);
+    }
+    if (priceMaxInput) {
+        priceMaxInput.value = String(currentFilters.priceMax);
+    }
+    if (priceDisplay) {
+        priceDisplay.textContent = String(currentFilters.priceMax);
+    }
+    if (priceMinDisplay) {
+        priceMinDisplay.textContent = String(currentFilters.priceMin);
+    }
+
+    const sortSelect = document.getElementById('sort-by');
+    if (sortSelect) sortSelect.value = currentFilters.sort;
+    const itemsSelect = document.getElementById('items-per-page');
+    if (itemsSelect) itemsSelect.value = String(currentFilters.viewPerPage);
+    const searchDesktop = document.getElementById('product-search');
+    const searchMobile = document.getElementById('product-search-mobile');
+    if (searchDesktop) searchDesktop.value = currentFilters.search || '';
+    if (searchMobile) searchMobile.value = currentFilters.search || '';
+
+    document.querySelectorAll('.category-filter').forEach((checkbox) => {
+        checkbox.checked = currentFilters.categories.includes(checkbox.value)
+            || (currentFilters.categories.length === 0 && checkbox.value === 'All');
+    });
+    document.querySelectorAll('.rating-filter').forEach((checkbox) => {
+        checkbox.checked = currentFilters.ratings.includes(parseInt(checkbox.value, 10));
+    });
+    document.querySelectorAll('.stock-filter').forEach((checkbox) => {
+        checkbox.checked = currentFilters.stockStatus.includes(checkbox.value);
+    });
+
     if (priceSlider) {
         priceSlider.addEventListener('input', function() {
             currentFilters.priceMax = parseInt(this.value);

@@ -11,6 +11,8 @@
     };
 
     const CATEGORY_OPTIONS = ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Beauty', 'Gaming'];
+    const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
     const dashboardFilterState = {
         query: '',
         status: 'all',
@@ -25,6 +27,17 @@
         } catch (_error) {
             return fallback;
         }
+    }
+
+    function sanitizeText(value) {
+        return String(value || '').replace(/[<>"'`]/g, '').trim();
+    }
+
+    function isSkuUnique(sku, currentId) {
+        if (!sku) return true;
+        const normalizedSku = String(sku).trim().toLowerCase();
+        return !getSellerProducts().some((item) => String(item.sku || '').trim().toLowerCase() === normalizedSku
+            && String(item.id) !== String(currentId || ''));
     }
 
     function getSellerProfile() {
@@ -77,8 +90,8 @@
 
         return {
             id: existingId || getMaxKnownProductId() + 1,
-            name: (raw.name || '').trim(),
-            description: (raw.description || '').trim(),
+            name: sanitizeText(raw.name),
+            description: sanitizeText(raw.description),
             category: safeCategory,
             price,
             originalPrice: Math.max(guessedOriginal, price),
@@ -91,7 +104,7 @@
             stock: inventory <= 5 ? 'low-stock' : 'in-stock',
             inventory,
             status: raw.status || 'active',
-            sku: (raw.sku || '').trim() || `SKU-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+            sku: sanitizeText(raw.sku) || `SKU-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
             shippingDays: Number(raw.shippingDays || 3),
             sellerManaged: true,
             createdAt: raw.createdAt || new Date().toISOString(),
@@ -348,6 +361,47 @@
         });
     }
 
+    function loadImage(source) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Could not load image.'));
+            img.src = source;
+        });
+    }
+
+    async function createImageVariantsFromFile(file) {
+        const originalDataUrl = await readImageAsDataURL(file);
+        const img = await loadImage(originalDataUrl);
+        const variants = [
+            { key: 'thumb', width: 240, quality: 0.75 },
+            { key: 'medium', width: 520, quality: 0.82 },
+            { key: 'large', width: 920, quality: 0.86 }
+        ];
+        const result = {};
+
+        variants.forEach((variant) => {
+            const ratio = img.height / img.width;
+            const width = Math.min(variant.width, img.width);
+            const height = Math.max(1, Math.round(width * ratio));
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0, width, height);
+            result[variant.key] = canvas.toDataURL('image/webp', variant.quality);
+        });
+
+        result.original = result.large || originalDataUrl;
+        result.srcset = [result.thumb, result.medium, result.large]
+            .filter(Boolean)
+            .map((value, index) => `${value} ${[240, 520, 920][index]}w`)
+            .join(', ');
+
+        return result;
+    }
+
     function setImagePreview(source) {
         const preview = document.getElementById('seller-image-preview');
         if (!preview) return;
@@ -400,19 +454,31 @@
         const editId = form.dataset.editId;
 
         const payload = {
-            name: form.elements.name.value,
-            description: form.elements.description.value,
+            name: sanitizeText(form.elements.name.value),
+            description: sanitizeText(form.elements.description.value),
             category: form.elements.category.value,
             price: Number(fromMwk(form.elements.price.value).toFixed(2)),
             originalPrice: Number(fromMwk(form.elements.originalPrice.value || 0).toFixed(2)),
             inventory: Number(form.elements.inventory.value),
             shippingDays: Number(form.elements.shippingDays.value || 3),
-            sku: form.elements.sku.value,
+            sku: sanitizeText(form.elements.sku.value),
             status: 'active'
         };
 
-        if (!payload.name || payload.price <= 0 || payload.inventory < 0) {
-            if (typeof showToast === 'function') showToast('Fill in valid product details.', 'error');
+        if (payload.name.length < 3) {
+            if (typeof showToast === 'function') showToast('Product name must be at least 3 characters.', 'error');
+            return;
+        }
+        if (payload.description.length < 10) {
+            if (typeof showToast === 'function') showToast('Description should be at least 10 characters.', 'error');
+            return;
+        }
+        if (!isSkuUnique(payload.sku, editId)) {
+            if (typeof showToast === 'function') showToast('SKU already exists. Please use a unique SKU.', 'error');
+            return;
+        }
+        if (payload.price <= 0 || payload.inventory < 0) {
+            if (typeof showToast === 'function') showToast('Fill in valid price and inventory values.', 'error');
             return;
         }
 
@@ -423,15 +489,29 @@
         }
 
         if (file) {
-            payload.image = await readImageAsDataURL(file);
+            if (!ALLOWED_IMAGE_TYPES.includes(String(file.type || '').toLowerCase())) {
+                if (typeof showToast === 'function') showToast('Use JPG, PNG, or WEBP image format.', 'error');
+                return;
+            }
+            if (file.size > MAX_IMAGE_SIZE_BYTES) {
+                if (typeof showToast === 'function') showToast('Image too large. Max size is 4MB.', 'error');
+                return;
+            }
+            const optimized = await createImageVariantsFromFile(file);
+            payload.image = optimized.medium || optimized.original;
+            payload.imageThumbnail = optimized.thumb || optimized.medium || optimized.original;
+            payload.imageLarge = optimized.large || optimized.original;
+            payload.imageSrcSet = optimized.srcset || '';
         }
 
         if (editId) {
             updateSellerProduct(editId, payload);
             if (typeof showToast === 'function') showToast('Product updated.', 'success');
+            if (typeof trackEvent === 'function') trackEvent('seller_product_updated', { productId: editId, sku: payload.sku });
         } else {
             addSellerProduct(payload);
             if (typeof showToast === 'function') showToast('Product published.', 'success');
+            if (typeof trackEvent === 'function') trackEvent('seller_product_created', { sku: payload.sku, category: payload.category });
         }
 
         resetProductForm();
@@ -664,6 +744,12 @@
             if (!String(file.type || '').startsWith('image/')) {
                 setImagePreview('');
                 if (typeof showToast === 'function') showToast('Please select a valid image file.', 'error');
+                event.target.value = '';
+                return;
+            }
+            if (file.size > MAX_IMAGE_SIZE_BYTES) {
+                setImagePreview('');
+                if (typeof showToast === 'function') showToast('Image too large. Max size is 4MB.', 'error');
                 event.target.value = '';
                 return;
             }

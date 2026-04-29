@@ -5,6 +5,17 @@
     padding: 0;
     box-sizing: border-box;
 }
+.oleo-script-regular {
+  font-family: "Oleo Script", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.oleo-script-bold {
+  font-family: "Oleo Script", system-ui;
+  font-weight: 700;
+  font-style: normal;
+}
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -667,4 +678,22 @@ footer a:hover::after {
         width: 1.1rem;
         height: 1.1rem;
     }
+}
+
+/* Accessibility: strong keyboard focus visibility */
+:focus-visible {
+    outline: 3px solid rgba(255, 106, 0, 0.55);
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }

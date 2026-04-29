@@ -15,6 +15,15 @@ const itemsIncrement = 20;
 const totalSlides = 3;
 const USD_TO_MWK_RATE = 1750;
 const FREE_SHIPPING_THRESHOLD_USD = 50;
+const FALLBACK_IMAGE_BY_CATEGORY = {
+    Electronics: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=75',
+    Fashion: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=900&q=75',
+    'Home & Garden': 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=900&q=75',
+    Sports: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=900&q=75',
+    Beauty: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=900&q=75',
+    Gaming: 'https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=900&q=75',
+    default: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=900&q=75'
+};
 
 const mwkFormatter = new Intl.NumberFormat('en-MW', {
     style: 'currency',
@@ -28,6 +37,43 @@ function toMwk(amount) {
 
 function formatPrice(amount) {
     return mwkFormatter.format(toMwk(amount));
+}
+
+function sanitizeText(value) {
+    return String(value || '').replace(/[<>"'`]/g, '').trim();
+}
+
+function trackEvent(eventName, payload = {}) {
+    const events = JSON.parse(localStorage.getItem('aura_analytics_events') || '[]');
+    events.unshift({
+        eventName,
+        payload,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('aura_analytics_events', JSON.stringify(events.slice(0, 500)));
+}
+
+function getCurrentUserRole() {
+    const fromDirect = (localStorage.getItem('aura_user_role') || '').toLowerCase();
+    if (fromDirect) return fromDirect;
+    try {
+        const user = JSON.parse(localStorage.getItem('aura_current_user') || 'null');
+        return String(user?.role || 'buyer').toLowerCase();
+    } catch (_error) {
+        return 'buyer';
+    }
+}
+
+function enforceRoleGuards() {
+    const page = window.location.pathname.split('/').pop();
+    const role = getCurrentUserRole();
+    const isLoggedIn = localStorage.getItem('aura_user_logged_in') === 'true';
+    if (page === 'seller-dashboard.html' && (!isLoggedIn || !['seller', 'admin'].includes(role))) {
+        showToast('Seller access required. Redirecting to sign in...', 'error');
+        setTimeout(() => {
+            window.location.href = 'signin.html';
+        }, 600);
+    }
 }
 
 function getOptimizedImageURL(imageURL, width = 500, quality = 70) {
@@ -50,6 +96,18 @@ function getOptimizedImageURL(imageURL, width = 500, quality = 70) {
         return imageURL;
     }
 }
+
+function getFallbackImageByCategory(category) {
+    return FALLBACK_IMAGE_BY_CATEGORY[category] || FALLBACK_IMAGE_BY_CATEGORY.default;
+}
+
+window.handleImageLoadError = function handleImageLoadError(imgEl) {
+    if (!imgEl || imgEl.dataset.fallbackApplied === 'true') return;
+    const category = imgEl.dataset.category || 'default';
+    const fallback = getOptimizedImageURL(getFallbackImageByCategory(category), 720, 75);
+    imgEl.dataset.fallbackApplied = 'true';
+    imgEl.src = fallback;
+};
 
 // ============ UTILITY FUNCTIONS ============
 function debounce(func, wait) {
@@ -98,6 +156,8 @@ function showToast(message, type = 'info') {
         ${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}
         <span>${message}</span>
     `;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
     document.body.appendChild(toast);
     
     // Animate in
@@ -307,11 +367,29 @@ function addToCart(product, btn = null) {
 
     // Simulate network delay for the loading effect
     setTimeout(() => {
+        const available = Number(product.inventory || 9999);
         const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
         const existingItem = cartItems.find(item => item.id === product.id);
         if (existingItem) {
-            existingItem.quantity = (existingItem.quantity || 1) + 1;
+            const nextQuantity = (existingItem.quantity || 1) + 1;
+            if (nextQuantity > available) {
+                showToast(`Only ${available} in stock for ${product.name}.`, 'error');
+                if (btn) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+                return;
+            }
+            existingItem.quantity = nextQuantity;
         } else {
+            if (available < 1) {
+                showToast(`${product.name} is currently out of stock.`, 'error');
+                if (btn) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+                return;
+            }
             cartItems.push({ ...product, quantity: 1 });
         }
         localStorage.setItem('cart', JSON.stringify(cartItems));
@@ -324,6 +402,7 @@ function addToCart(product, btn = null) {
             btn.disabled = false;
         }
         showToast('Added to cart!', 'success');
+        trackEvent('add_to_cart', { productId: product.id, category: product.category, source: 'script' });
     }, 600);
 }
 
@@ -451,6 +530,7 @@ function removeFromCart(productId) {
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
     const filtered = cartItems.filter(item => item.id !== productId);
     localStorage.setItem('cart', JSON.stringify(filtered));
+    trackEvent('cart_remove_item', { productId });
     updateCartCount();
     updateCartUI();
     renderCartSummary();
@@ -461,8 +541,17 @@ function changeCartQuantity(productId, delta) {
     const item = cartItems.find(cartItem => cartItem.id === productId);
     if (!item) return;
 
-    item.quantity = Math.max(1, (item.quantity || 1) + delta);
+    const nextQuantity = Math.max(1, (item.quantity || 1) + delta);
+    const sourceProduct = (Array.isArray(products) ? products.find(p => Number(p.id) === Number(productId)) : null) || item;
+    const maxInventory = Number(sourceProduct.inventory || 9999);
+    if (nextQuantity > maxInventory) {
+        showToast(`Only ${maxInventory} units available in stock.`, 'error');
+        return;
+    }
+
+    item.quantity = nextQuantity;
     localStorage.setItem('cart', JSON.stringify(cartItems));
+    trackEvent('cart_change_quantity', { productId, quantity: item.quantity });
     updateCartCount();
     updateCartUI();
     renderCartSummary();
@@ -536,9 +625,9 @@ function updateCartUI() {
 
 function getPromoConfig(code) {
     const promos = {
-        WELCOME10: { type: 'percent', value: 10 },
-        SAVE10: { type: 'percent', value: 10 },
-        UNION15: { type: 'percent', value: 15 }
+        WELCOME10: { type: 'percent', value: 10, minSubtotal: 20 },
+        SAVE10: { type: 'percent', value: 10, minSubtotal: 25 },
+        UNION15: { type: 'percent', value: 15, minSubtotal: 40 }
     };
 
     return promos[code] || null;
@@ -621,15 +710,32 @@ function applyPromoCode() {
         return;
     }
 
+    const totals = getCartTotals();
+    if (totals.subtotal < (promo.minSubtotal || 0)) {
+        showToast(`Code ${code} requires minimum cart of ${formatPrice(promo.minSubtotal)}.`, 'error');
+        return;
+    }
+
     localStorage.setItem('cartPromoCode', code);
     renderCartSummary();
     showToast(`${code} applied!`, 'success');
+    trackEvent('cart_apply_promo', { code });
 }
 
 function openCheckoutModal() {
     const totals = getCartTotals();
     if (totals.subtotal === 0) {
         showToast('Your cart is empty!', 'error');
+        return;
+    }
+
+    const outOfStock = getCartItems().find((item) => {
+        const sourceProduct = Array.isArray(products) ? products.find(p => Number(p.id) === Number(item.id)) : null;
+        const inventory = Number(sourceProduct?.inventory || item.inventory || 9999);
+        return Number(item.quantity || 1) > inventory;
+    });
+    if (outOfStock) {
+        showToast(`Insufficient stock for ${outOfStock.name}. Please reduce quantity.`, 'error');
         return;
     }
 
@@ -725,7 +831,7 @@ function updatePaymentInputLabel(method) {
 function processCheckoutPayment() {
     const phoneInput = document.getElementById('checkout-phone');
     const phoneError = document.getElementById('checkout-phone-error');
-    const phoneValue = phoneInput.value.trim();
+    const phoneValue = sanitizeText(phoneInput.value);
     const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value;
     
     let isValid = true;
@@ -779,6 +885,12 @@ function processCheckoutPayment() {
     const history = JSON.parse(localStorage.getItem('aura_transactions')) || [];
     history.unshift(transaction);
     localStorage.setItem('aura_transactions', JSON.stringify(history));
+    trackEvent('checkout_submit', {
+        transactionId,
+        method: methodTitle,
+        total: totals.total,
+        items: cartItems.length
+    });
 
     showToast('Processing payment...', 'success');
     
@@ -914,10 +1026,13 @@ function createProductCard(product) {
     const displayName = searchWords.length > 0 ? highlightMatch(product.name, searchWords) : product.name;
 
     const cardImageURL = getOptimizedImageURL(product.image, 420, 70);
+    const cardThumbURL = getOptimizedImageURL(product.imageThumbnail || product.image, 240, 65);
+    const cardLargeURL = getOptimizedImageURL(product.imageLarge || product.image, 920, 80);
+    const cardSrcSet = product.imageSrcSet || `${cardThumbURL} 240w, ${cardImageURL} 420w, ${cardLargeURL} 920w`;
     return `
         <div onclick="viewProduct(${product.id})" class="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 group border border-gray-100 dark:border-gray-800 cursor-pointer relative">
             <div class="aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
-                <img src="${cardImageURL}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                <img src="${cardImageURL}" srcset="${cardSrcSet}" sizes="(max-width: 768px) 50vw, 25vw" alt="${sanitizeText(product.name)}" loading="lazy" decoding="async" fetchpriority="low" data-category="${sanitizeText(product.category)}" onerror="window.handleImageLoadError(this)" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                 ${product.discount ? `<span class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">-${product.discount}%</span>` : ''}
                 ${product.tag ? `<span class="absolute top-2 left-2 bg-[#FF6A00] text-white px-2 py-1 rounded-full text-xs font-bold">${tagEmoji}</span>` : ''}
                 <span class="absolute bottom-12 left-2 bg-white/95 ${stockColor} px-2 py-1 rounded text-xs font-semibold">${stockStatus}</span>
@@ -1019,7 +1134,7 @@ function renderCategoryCards() {
         return `
             <div onclick="filterHomeProducts('${cat}')" class="group relative overflow-hidden rounded-2xl cursor-pointer min-h-[250px] shadow-lg transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
                 <div class="absolute inset-0 z-0">
-                    <img src="${image}" alt="${cat}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:translate-x-2">
+                    <img src="${image}" alt="${cat}" data-category="${cat}" onerror="window.handleImageLoadError(this)" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:translate-x-2">
                     <div class="absolute inset-0 bg-gradient-to-br ${categoryColors[idx]} opacity-80 group-hover:opacity-90 transition-opacity"></div>
                 </div>
                 <div class="relative z-10 p-8 h-full flex flex-col justify-end text-white">
@@ -1063,7 +1178,7 @@ function renderFrequentlyBoughtTogether() {
             ${bundled.map((p, idx) => `
                 <div class="flex items-center gap-4 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-[#FF6A00]/50 transition-all">
                     <input type="checkbox" checked class="w-5 h-5 text-[#FF6A00] rounded">
-                    <img src="${p.image}" alt="${p.name}" class="w-16 h-16 object-cover rounded">
+                    <img src="${p.image}" alt="${p.name}" data-category="${p.category || 'default'}" onerror="window.handleImageLoadError(this)" class="w-16 h-16 object-cover rounded">
                     <div class="flex-grow">
                         <p class="font-semibold text-gray-900 dark:text-white text-sm line-clamp-1">${p.name}</p>
                         <p class="text-xs text-gray-500">by ${p.supplier}</p>
@@ -1313,7 +1428,7 @@ function compareProducts() {
                                 ${list.map(p => `
                                     <th class="py-4 px-4 min-w-[150px]">
                                         <div class="flex flex-col items-center text-center">
-                                            <img src="${p.image}" class="w-20 h-20 object-cover rounded-lg mb-2">
+                                            <img src="${p.image}" data-category="${p.category || 'default'}" onerror="window.handleImageLoadError(this)" class="w-20 h-20 object-cover rounded-lg mb-2">
                                             <p class="font-bold text-xs text-gray-900 dark:text-white line-clamp-1">${p.name}</p>
                                             <button onclick="removeFromCompare(${p.id})" class="text-[10px] text-red-500 mt-1 hover:underline">Remove</button>
                                         </div>
@@ -1597,7 +1712,7 @@ function initSearchAutocomplete() {
             if (matches.length > 0) {
                 autocompleteContainer.innerHTML = matches.map(p => `
                     <div onclick="viewProduct(${p.id})" class="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors">
-                        <img src="${p.image}" class="w-10 h-10 object-cover rounded shadow-sm">
+                        <img src="${p.image}" data-category="${p.category || 'default'}" onerror="window.handleImageLoadError(this)" class="w-10 h-10 object-cover rounded shadow-sm">
                         <div class="flex-grow">
                         <p class="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">${highlightMatch(p.name, searchWords)}</p>
                         <p class="text-[10px] text-[#FF6A00] font-bold uppercase tracking-wider">${highlightMatch(p.category, searchWords)}</p>
@@ -1872,27 +1987,41 @@ function renderSeasonalCollections() {
     if (!grid) return;
     
     const collections = [
-        { name: 'Summer Essentials', icon: '☀️', color: 'from-yellow-400 to-orange-400' },
-        { name: 'Winter Collection', icon: '❄️', color: 'from-blue-400 to-cyan-400' },
-        { name: 'Spring Fashion', icon: '🌸', color: 'from-pink-400 to-rose-400' },
-        { name: 'Fall Deals', icon: '🍂', color: 'from-orange-400 to-red-400' }
+        { name: 'Summer Essentials', category: 'Beauty', season: 'Summer', color: 'from-yellow-500/80 to-orange-600/80', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1200&q=80', icon: '☀' },
+        { name: 'Winter Collection', category: 'Home & Garden', season: 'Winter', color: 'from-blue-600/80 to-cyan-700/80', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&q=80', icon: '❄' },
+        { name: 'Spring Fashion', category: 'Fashion', season: 'Spring', color: 'from-pink-600/80 to-rose-700/80', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200&q=80', icon: '✿' },
+        { name: 'Fall Deals', category: 'Sports', season: 'Fall', color: 'from-orange-700/80 to-red-700/80', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1200&q=80', icon: '❋' }
     ];
     
-    grid.innerHTML = collections.map((col, idx) => `
-        <div class="group relative cursor-pointer">
-            <div class="absolute -inset-1 bg-gradient-to-r ${col.color} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-            <div class="relative bg-gradient-to-br ${col.color} rounded-2xl p-8 text-white h-56 flex flex-col justify-between overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
-                <div class="relative z-10">
-                    <div class="text-5xl mb-4">${col.icon === '☀️' ? '☀️' : col.icon === '❄️' ? '❄️' : col.icon === '🌸' ? '🌸' : '🍂'}</div>
-                    <h3 class="text-2xl font-bold">${col.name}</h3>
+    grid.innerHTML = collections.map((col) => {
+        const relatedCount = products.filter((item) => item.category === col.category).length;
+        const image = col.image || products[0]?.image || '';
+        const optimizedImage = getOptimizedImageURL(image, 720, 75);
+        return `
+        <div class="group relative overflow-hidden rounded-2xl cursor-pointer min-h-[250px] shadow-lg transition-all duration-500 hover:shadow-2xl hover:-translate-y-1" onclick="window.location.href='products.html?search=${encodeURIComponent(col.category)}'">
+            <div class="absolute inset-0 z-0">
+                <img src="${optimizedImage}" alt="${col.name}" loading="lazy" decoding="async" fetchpriority="low" data-category="${col.category}" onerror="window.handleImageLoadError(this)" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:translate-x-2">
+                <div class="absolute inset-0 bg-gradient-to-br ${col.color} opacity-85 group-hover:opacity-90 transition-opacity"></div>
+            </div>
+            <div class="relative z-10 p-7 h-full flex flex-col justify-end text-white">
+                <div class="transform transition-transform duration-500 group-hover:-translate-y-2">
+                    <div class="bg-white/20 backdrop-blur-md p-3 rounded-xl w-fit mb-4">
+                        <span class="text-2xl font-bold">${col.icon}</span>
+                    </div>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider opacity-90 mb-1">${col.season}</p>
+                    <h3 class="text-2xl font-bold leading-tight mb-1">${col.name}</h3>
+                    <p class="text-sm opacity-90">${relatedCount} items</p>
                 </div>
-                <button onclick="window.location.href='products.html'" class="text-white font-bold hover:underline z-10">
-                    Shop Now →
-                </button>
+                <div class="overflow-hidden h-0 group-hover:h-8 transition-all duration-300">
+                    <span class="text-sm font-bold flex items-center gap-2">
+                        Explore Collection
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </span>
+                </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function renderPaymentMethods() {
@@ -2167,7 +2296,7 @@ function renderPriceDropAlerts() {
             <div class="absolute -inset-1 bg-gradient-to-r from-red-400/20 to-orange-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
             <div class="relative bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-red-200 dark:border-red-900/50 hover:border-red-400 transition-all">
                 <div class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                    <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                    <img src="${p.image}" alt="${p.name}" data-category="${p.category || 'default'}" onerror="window.handleImageLoadError(this)" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
                     <div class="absolute top-2 left-2 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
                         PRICE DROP
                     </div>
@@ -2417,6 +2546,7 @@ window.addEventListener('scroll', () => {
 
 // ============ 12. PAGE INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', () => {
+    enforceRoleGuards();
     initializeDarkMode();
     updateCartCount();
     initializeRecentlyViewed();
